@@ -1,0 +1,997 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-09",
+  "source": "Fictional sample data for the interview exercise. Not real products.",
+  "paddles": [
+    {
+      "id": "apex-court-summit-pro-16",
+      "brand": "Apex Court",
+      "name": "Summit Pro 16",
+      "releaseYear": 2025,
+      "priceUsd": 249.99,
+      "inStock": true,
+      "shape": "elongated",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.0,
+        "unit": "oz"
+      },
+      "swingWeight": 116,
+      "twistWeight": 6.4,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.5,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 7,
+        "control": 8,
+        "spin": 9,
+        "pop": 6
+      },
+      "imagePath": "assets/images/paddles/apex-court-summit-pro-16.png",
+      "description": "Tour-level control paddle with a thick core and a gritty raw carbon face."
+    },
+    {
+      "id": "apex-court-summit-pro-14",
+      "brand": "Apex Court",
+      "name": "Summit Pro 14",
+      "releaseYear": 2025,
+      "priceUsd": 249.99,
+      "inStock": true,
+      "shape": "elongated",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 7.9,
+        "unit": "oz"
+      },
+      "swingWeight": 118,
+      "twistWeight": 6.2,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.5,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 8,
+        "control": 7,
+        "spin": 9,
+        "pop": 7
+      },
+      "imagePath": "assets/images/paddles/apex-court-summit-pro-14.png",
+      "description": "Thinner-core Summit for players who want more pop without losing spin."
+    },
+    {
+      "id": "apex-court-ridgeline-hybrid",
+      "brand": "Apex Court",
+      "name": "Ridgeline Hybrid",
+      "releaseYear": 2024,
+      "priceUsd": 199.0,
+      "inStock": true,
+      "shape": "hybrid",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.1,
+        "unit": "oz"
+      },
+      "swingWeight": 112,
+      "twistWeight": 6.8,
+      "dimensionsIn": {
+        "length": 16.25,
+        "width": 7.75,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 7,
+        "control": 8,
+        "spin": 8,
+        "pop": 6
+      },
+      "imagePath": "assets/images/paddles/apex-court-ridgeline-hybrid.png",
+      "description": "Balanced all-court paddle with a forgiving sweet spot."
+    },
+    {
+      "id": "apex-court-ridgeline-wide",
+      "brand": "Apex Court",
+      "name": "Ridgeline Wide",
+      "releaseYear": 2024,
+      "priceUsd": 179.0,
+      "inStock": false,
+      "shape": "widebody",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.2,
+        "unit": "oz"
+      },
+      "swingWeight": 105,
+      "twistWeight": 7.4,
+      "dimensionsIn": {
+        "length": 15.75,
+        "width": 8.25,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 6,
+        "control": 9,
+        "spin": 7,
+        "pop": 5
+      },
+      "imagePath": "assets/images/paddles/apex-court-ridgeline-wide.jpg",
+      "description": "Widebody shape for maximum forgiveness at the kitchen line."
+    },
+    {
+      "id": "apex-court-basecamp",
+      "brand": "Apex Court",
+      "name": "Basecamp",
+      "releaseYear": 2023,
+      "priceUsd": 89.99,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "fiberglass",
+      "coreThicknessMm": 13,
+      "weight": {
+        "value": 7.6,
+        "unit": "oz"
+      },
+      "swingWeight": 108,
+      "twistWeight": 6.1,
+      "dimensionsIn": {
+        "length": 15.75,
+        "width": 8.0,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 8,
+        "control": 5,
+        "spin": 5,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/apex-court-basecamp.png",
+      "description": "Entry-level fiberglass paddle with lots of easy power."
+    },
+    {
+      "id": "apex-court-summit-pro-16-2024",
+      "brand": "Apex Court",
+      "name": "Summit Pro 16 (2024)",
+      "releaseYear": 2024,
+      "priceUsd": 229.99,
+      "inStock": false,
+      "shape": "elongated",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.0,
+        "unit": "oz"
+      },
+      "swingWeight": 114,
+      "twistWeight": 6.3,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.5,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 7,
+        "control": 8,
+        "spin": 8,
+        "pop": 6
+      },
+      "imagePath": null,
+      "description": "Previous-generation Summit. Discontinued."
+    },
+    {
+      "id": "dinkworks-soft-touch-16",
+      "brand": "Dinkworks",
+      "name": "Soft Touch 16",
+      "releaseYear": 2025,
+      "priceUsd": 159.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 7.8,
+        "unit": "oz"
+      },
+      "swingWeight": 104,
+      "twistWeight": 6.6,
+      "dimensionsIn": {
+        "length": 15.875,
+        "width": 7.875,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 5,
+        "control": 10,
+        "spin": 8,
+        "pop": 4
+      },
+      "imagePath": "assets/images/paddles/dinkworks-soft-touch-16.png",
+      "description": "Built for dinkers. Dead-soft feel and pinpoint placement."
+    },
+    {
+      "id": "dinkworks-soft-touch-14",
+      "brand": "Dinkworks",
+      "name": "Soft Touch 14",
+      "releaseYear": 2025,
+      "priceUsd": 159.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 7.7,
+        "unit": "oz"
+      },
+      "swingWeight": 107,
+      "twistWeight": 6.4,
+      "dimensionsIn": {
+        "length": 15.875,
+        "width": 7.875,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 6,
+        "control": 9,
+        "spin": 8,
+        "pop": 5
+      },
+      "imagePath": "assets/images/paddles/dinkworks-soft-touch-14.png",
+      "description": "A touch more pop than the 16mm Soft Touch."
+    },
+    {
+      "id": "dinkworks-reset",
+      "brand": "Dinkworks",
+      "name": "Reset",
+      "releaseYear": 2024,
+      "priceUsd": 129.0,
+      "inStock": true,
+      "shape": "widebody",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 222,
+        "unit": "g"
+      },
+      "swingWeight": 101,
+      "twistWeight": 7.1,
+      "dimensionsIn": {
+        "length": 15.5,
+        "width": 8.25,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.0,
+      "ratings": {
+        "power": 5,
+        "control": 9,
+        "spin": 6,
+        "pop": 4
+      },
+      "imagePath": "assets/images/paddles/dinkworks-reset.png",
+      "description": "Widebody blocker designed for resetting hard drives."
+    },
+    {
+      "id": "dinkworks-lob-specialist",
+      "brand": "Dinkworks",
+      "name": "Lob Specialist",
+      "releaseYear": 2023,
+      "priceUsd": 119.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "fiberglass",
+      "coreThicknessMm": 13,
+      "weight": {
+        "value": 7.4,
+        "unit": "oz"
+      },
+      "swingWeight": null,
+      "twistWeight": 6.0,
+      "dimensionsIn": {
+        "length": 15.75,
+        "width": 8.0,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.0,
+      "ratings": {
+        "power": 7,
+        "control": 6,
+        "spin": 5,
+        "pop": 7
+      },
+      "imagePath": null,
+      "description": "Lightweight paddle with a lively fiberglass face."
+    },
+    {
+      "id": "dinkworks-soft-touch-junior",
+      "brand": "Dinkworks",
+      "name": "Soft Touch Junior",
+      "releaseYear": 2025,
+      "priceUsd": 69.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "fiberglass",
+      "coreThicknessMm": 11,
+      "weight": {
+        "value": 6.9,
+        "unit": "oz"
+      },
+      "swingWeight": 92,
+      "twistWeight": 5.6,
+      "dimensionsIn": {
+        "length": 15.0,
+        "width": 7.75,
+        "handleLength": 4.5
+      },
+      "gripCircumferenceIn": 3.875,
+      "ratings": {
+        "power": 6,
+        "control": 7,
+        "spin": 4,
+        "pop": 6
+      },
+      "imagePath": "assets/images/paddles/dinkworks-soft-touch-junior.png",
+      "description": "Lighter, shorter-handled paddle for younger and smaller players."
+    },
+    {
+      "id": "volley-theory-hand-speed-x",
+      "brand": "Volley Theory",
+      "name": "Hand Speed X",
+      "releaseYear": 2025,
+      "priceUsd": 219.0,
+      "inStock": true,
+      "shape": "hybrid",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 7.6,
+        "unit": "oz"
+      },
+      "swingWeight": 102,
+      "twistWeight": 6.5,
+      "dimensionsIn": {
+        "length": 16.0,
+        "width": 7.75,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.0,
+      "ratings": {
+        "power": 7,
+        "control": 8,
+        "spin": 9,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/volley-theory-hand-speed-x.png",
+      "description": "Low swing weight for lightning-fast hands battles."
+    },
+    {
+      "id": "volley-theory-hand-speed-x-long",
+      "brand": "Volley Theory",
+      "name": "Hand Speed X Long",
+      "releaseYear": 2025,
+      "priceUsd": 229.0,
+      "inStock": true,
+      "shape": "elongated",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 7.8,
+        "unit": "oz"
+      },
+      "swingWeight": 113,
+      "twistWeight": 6.0,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.375,
+        "handleLength": 5.75
+      },
+      "gripCircumferenceIn": 4.0,
+      "ratings": {
+        "power": 8,
+        "control": 7,
+        "spin": 9,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/volley-theory-hand-speed-x-long.png",
+      "description": "Elongated Hand Speed with a longer handle for two-handed backhands."
+    },
+    {
+      "id": "volley-theory-counterpunch",
+      "brand": "Volley Theory",
+      "name": "Counterpunch",
+      "releaseYear": 2024,
+      "priceUsd": 189.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "kevlar hybrid",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.3,
+        "unit": "oz"
+      },
+      "swingWeight": 110,
+      "twistWeight": 7.2,
+      "dimensionsIn": {
+        "length": 15.75,
+        "width": 8.0,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 7,
+        "control": 8,
+        "spin": 7,
+        "pop": 7
+      },
+      "imagePath": "assets/images/paddles/volley-theory-counterpunch.png",
+      "description": "Kevlar-reinforced face for durability and a crisp response."
+    },
+    {
+      "id": "volley-theory-counterpunch-lite",
+      "brand": "Volley Theory",
+      "name": "Counterpunch Lite",
+      "releaseYear": 2024,
+      "priceUsd": 189.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "kevlar hybrid",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 7.5,
+        "unit": "oz"
+      },
+      "swingWeight": null,
+      "dimensionsIn": {
+        "length": 15.75,
+        "width": 8.0,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 6,
+        "control": 8,
+        "spin": 7,
+        "pop": 6
+      },
+      "imagePath": "assets/images/paddles/volley-theory-counterpunch-lite.png",
+      "description": "Lighter version of the Counterpunch."
+    },
+    {
+      "id": "volley-theory-firefight",
+      "brand": "Volley Theory",
+      "name": "Firefight",
+      "releaseYear": 2023,
+      "priceUsd": 139.0,
+      "inStock": false,
+      "shape": "hybrid",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 7.9,
+        "unit": "oz"
+      },
+      "swingWeight": 111,
+      "twistWeight": 6.3,
+      "dimensionsIn": {
+        "length": 16.0,
+        "width": 7.75,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 8,
+        "control": 6,
+        "spin": 7,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/volley-theory-firefight.png",
+      "description": ""
+    },
+    {
+      "id": "third-shot-labs-drop-shot-16",
+      "brand": "Third Shot Labs",
+      "name": "Drop Shot 16",
+      "releaseYear": 2025,
+      "priceUsd": 174.99,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 7.9,
+        "unit": "oz"
+      },
+      "swingWeight": 106,
+      "twistWeight": 6.9,
+      "dimensionsIn": {
+        "length": 15.875,
+        "width": 7.875,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 6,
+        "control": 9,
+        "spin": 9,
+        "pop": 5
+      },
+      "imagePath": "assets/images/paddles/third-shot-labs-drop-shot-16.png",
+      "description": "Lab-tuned for third-shot drops. Heavy spin, soft feel."
+    },
+    {
+      "id": "third-shot-labs-drop-shot-13",
+      "brand": "Third Shot Labs",
+      "name": "Drop Shot 13",
+      "releaseYear": 2025,
+      "priceUsd": 174.99,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 13,
+      "weight": {
+        "value": 7.8,
+        "unit": "oz"
+      },
+      "swingWeight": 109,
+      "twistWeight": 6.5,
+      "dimensionsIn": {
+        "length": 15.875,
+        "width": 7.875,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 7,
+        "control": 8,
+        "spin": 9,
+        "pop": 7
+      },
+      "imagePath": "assets/images/paddles/third-shot-labs-drop-shot-13.png",
+      "description": "Thinner Drop Shot with more pop for aggressive drivers."
+    },
+    {
+      "id": "third-shot-labs-drive-shot-elongated",
+      "brand": "Third Shot Labs",
+      "name": "Drive Shot Elongated",
+      "releaseYear": 2025,
+      "priceUsd": 199.99,
+      "inStock": true,
+      "shape": "elongated",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.4,
+        "unit": "oz"
+      },
+      "swingWeight": 121,
+      "twistWeight": 6.1,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.5,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 9,
+        "control": 6,
+        "spin": 9,
+        "pop": 7
+      },
+      "imagePath": "assets/images/paddles/third-shot-labs-drive-shot-elongated.png",
+      "description": "Heaviest swing weight in the lineup. Built for drives from the baseline."
+    },
+    {
+      "id": "third-shot-labs-lab-prototype-t-7",
+      "brand": "Third Shot Labs",
+      "name": "Lab Prototype T-7",
+      "releaseYear": 2026,
+      "priceUsd": null,
+      "inStock": false,
+      "shape": "hybrid",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 15,
+      "weight": {
+        "value": 8.0,
+        "unit": "oz"
+      },
+      "swingWeight": 112,
+      "twistWeight": 6.7,
+      "dimensionsIn": {
+        "length": 16.25,
+        "width": 7.625,
+        "handleLength": 5.375
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 8,
+        "control": 8,
+        "spin": 10,
+        "pop": 7
+      },
+      "imagePath": null,
+      "description": "Limited prototype. Pricing not yet announced."
+    },
+    {
+      "id": "third-shot-labs-erne-edition",
+      "brand": "Third Shot Labs",
+      "name": "Erne Edition",
+      "releaseYear": 2024,
+      "priceUsd": 209.99,
+      "inStock": true,
+      "shape": "elongated",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 228,
+        "unit": "g"
+      },
+      "swingWeight": 117,
+      "twistWeight": 5.9,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.375,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 8,
+        "control": 7,
+        "spin": 8,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/third-shot-labs-erne-edition.png",
+      "description": "Long reach for erne attempts and poaching."
+    },
+    {
+      "id": "third-shot-labs-practice-pal",
+      "brand": "Third Shot Labs",
+      "name": "Practice Pal",
+      "releaseYear": 2022,
+      "priceUsd": 49.99,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "composite",
+      "coreThicknessMm": 10,
+      "weight": {
+        "value": 7.2,
+        "unit": "oz"
+      },
+      "swingWeight": 95,
+      "twistWeight": 5.5,
+      "dimensionsIn": {
+        "length": 15.5,
+        "width": 8.0,
+        "handleLength": 4.75
+      },
+      "gripCircumferenceIn": 4.0,
+      "ratings": {
+        "power": 6,
+        "control": 5,
+        "pop": 6
+      },
+      "imagePath": "assets/images/paddles/third-shot-labs-practice-pal.png",
+      "description": "Budget practice paddle for drilling and loaners."
+    },
+    {
+      "id": "kitchen-line-co-no-volley-zone",
+      "brand": "Kitchen Line Co.",
+      "name": "No Volley Zone",
+      "releaseYear": 2024,
+      "priceUsd": 149.0,
+      "inStock": true,
+      "shape": "widebody",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 7.9,
+        "unit": "oz"
+      },
+      "swingWeight": 100,
+      "twistWeight": 7.6,
+      "dimensionsIn": {
+        "length": 15.5,
+        "width": 8.25,
+        "handleLength": 4.875
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 5,
+        "control": 9,
+        "spin": 7,
+        "pop": 4
+      },
+      "imagePath": "assets/images/paddles/kitchen-line-co-no-volley-zone.png",
+      "description": "Kitchen-focused widebody with an oversized sweet spot."
+    },
+    {
+      "id": "kitchen-line-co-transition",
+      "brand": "Kitchen Line Co.",
+      "name": "Transition",
+      "releaseYear": 2025,
+      "priceUsd": 169.0,
+      "inStock": true,
+      "shape": "hybrid",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.0,
+        "unit": "oz"
+      },
+      "swingWeight": 109,
+      "twistWeight": 6.8,
+      "dimensionsIn": {
+        "length": 16.0,
+        "width": 7.875,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 7,
+        "control": 8,
+        "spin": 8,
+        "pop": 6
+      },
+      "imagePath": "assets/images/paddles/kitchen-line-co-transition.png",
+      "description": "Made for the transition zone. Equally comfortable resetting and attacking."
+    },
+    {
+      "id": "kitchen-line-co-transition-pro",
+      "brand": "Kitchen Line Co.",
+      "name": "Transition Pro",
+      "releaseYear": 2026,
+      "priceUsd": 219.0,
+      "inStock": true,
+      "shape": "hybrid",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 8.1,
+        "unit": "oz"
+      },
+      "swingWeight": 114,
+      "twistWeight": 6.6,
+      "dimensionsIn": {
+        "length": 16.0,
+        "width": 7.875,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 8,
+        "control": 8,
+        "spin": 9,
+        "pop": 7
+      },
+      "imagePath": "assets/images/paddles/kitchen-line-co-transition-pro.png",
+      "description": "Thermoformed edge and a thinner core for more power than the original Transition."
+    },
+    {
+      "id": "kitchen-line-co-the-dink-machine-ultra-control-signature-series-edition",
+      "brand": "Kitchen Line Co.",
+      "name": "The Dink Machine Ultra-Control Signature Series Edition",
+      "releaseYear": 2026,
+      "priceUsd": 259.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 19,
+      "weight": {
+        "value": 8.2,
+        "unit": "oz"
+      },
+      "swingWeight": 103,
+      "twistWeight": 7.0,
+      "dimensionsIn": {
+        "length": 15.875,
+        "width": 7.875,
+        "handleLength": 5.25
+      },
+      "gripCircumferenceIn": 4.375,
+      "ratings": {
+        "power": 4,
+        "control": 10,
+        "spin": 8,
+        "pop": 3
+      },
+      "imagePath": "assets/images/paddles/kitchen-line-co-the-dink-machine-ultra-control-signature-series-edition.png",
+      "description": "Signature control paddle with an extra-thick 19mm core."
+    },
+    {
+      "id": "kitchen-line-co-sideout",
+      "brand": "Kitchen Line Co.",
+      "name": "Sideout",
+      "releaseYear": 2023,
+      "priceUsd": 99.0,
+      "inStock": false,
+      "shape": "standard",
+      "faceMaterial": "fiberglass",
+      "coreThicknessMm": 13,
+      "weight": {
+        "value": 7.7,
+        "unit": "oz"
+      },
+      "swingWeight": 107,
+      "twistWeight": 6.2,
+      "dimensionsIn": {
+        "length": 15.75,
+        "width": 8.0,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 8,
+        "control": 6,
+        "spin": 5,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/kitchen-line-co-sideout.png",
+      "description": "Affordable fiberglass paddle with plenty of pop."
+    },
+    {
+      "id": "erne-athletics-airborne-14",
+      "brand": "Erne Athletics",
+      "name": "Airborne 14",
+      "releaseYear": 2025,
+      "priceUsd": 239.0,
+      "inStock": true,
+      "shape": "elongated",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 7.7,
+        "unit": "oz"
+      },
+      "swingWeight": 115,
+      "twistWeight": 5.8,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.375,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 9,
+        "control": 6,
+        "spin": 9,
+        "pop": 9
+      },
+      "imagePath": "assets/images/paddles/erne-athletics-airborne-14.png",
+      "description": "Thermoformed elongated paddle with maximum pop."
+    },
+    {
+      "id": "erne-athletics-airborne-16",
+      "brand": "Erne Athletics",
+      "name": "Airborne 16",
+      "releaseYear": 2025,
+      "priceUsd": 239.0,
+      "inStock": true,
+      "shape": "elongated",
+      "faceMaterial": "raw carbon",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 7.9,
+        "unit": "oz"
+      },
+      "swingWeight": 117,
+      "twistWeight": 6.0,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.375,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 8,
+        "control": 7,
+        "spin": 9,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/erne-athletics-airborne-16.png",
+      "description": "Slightly more control than the Airborne 14."
+    },
+    {
+      "id": "erne-athletics-groundwork",
+      "brand": "Erne Athletics",
+      "name": "Groundwork",
+      "releaseYear": 2024,
+      "priceUsd": 179.0,
+      "inStock": true,
+      "shape": "standard",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 8.0,
+        "unit": "oz"
+      },
+      "swingWeight": 108,
+      "twistWeight": 6.9,
+      "dimensionsIn": {
+        "length": 15.875,
+        "width": 7.875,
+        "handleLength": 5.125
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 6,
+        "control": 8,
+        "spin": 7,
+        "pop": 5
+      },
+      "imagePath": "assets/images/paddles/erne-athletics-groundwork.png",
+      "description": "Dependable all-rounder for intermediate players."
+    },
+    {
+      "id": "erne-athletics-groundwork-wide",
+      "brand": "Erne Athletics",
+      "name": "Groundwork Wide",
+      "releaseYear": 2024,
+      "priceUsd": 179.0,
+      "inStock": true,
+      "shape": "widebody",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 16,
+      "weight": {
+        "value": 230,
+        "unit": "g"
+      },
+      "swingWeight": 104,
+      "twistWeight": 7.5,
+      "dimensionsIn": {
+        "length": 15.5,
+        "width": 8.25,
+        "handleLength": 5.0
+      },
+      "gripCircumferenceIn": 4.25,
+      "ratings": {
+        "power": 6,
+        "control": 9,
+        "spin": 7,
+        "pop": 5
+      },
+      "imagePath": null,
+      "description": "Widebody Groundwork for extra forgiveness."
+    },
+    {
+      "id": "erne-athletics-airborne-14-2023",
+      "brand": "Erne Athletics",
+      "name": "Airborne 14",
+      "releaseYear": 2023,
+      "priceUsd": 199.0,
+      "inStock": false,
+      "shape": "elongated",
+      "faceMaterial": "carbon fiber",
+      "coreThicknessMm": 14,
+      "weight": {
+        "value": 7.6,
+        "unit": "oz"
+      },
+      "swingWeight": 113,
+      "twistWeight": 5.7,
+      "dimensionsIn": {
+        "length": 16.5,
+        "width": 7.375,
+        "handleLength": 5.5
+      },
+      "gripCircumferenceIn": 4.125,
+      "ratings": {
+        "power": 8,
+        "control": 6,
+        "spin": 7,
+        "pop": 8
+      },
+      "imagePath": "assets/images/paddles/erne-athletics-airborne-14-2023.png",
+      "description": "Original 2023 Airborne, before the raw carbon update."
+    }
+  ]
+}
