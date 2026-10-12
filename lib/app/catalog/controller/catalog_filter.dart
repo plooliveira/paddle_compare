@@ -28,13 +28,6 @@ abstract class CatalogFilter with _$CatalogFilter {
       (minPrice != null || maxPrice != null ? 1 : 0) +
       (inStockOnly ? 1 : 0);
 
-  bool get hasActiveFilters =>
-      query.trim().isNotEmpty ||
-      shapes.isNotEmpty ||
-      minPrice != null ||
-      maxPrice != null ||
-      inStockOnly;
-
   PaddleQuery toQuery() {
     final search = query.trim();
     return PaddleQuery(

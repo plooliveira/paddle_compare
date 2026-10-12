@@ -1,7 +1,11 @@
+import 'dart:async';
+
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../controller/catalog_controller.dart';
+import '../../../state/catalog_state.dart';
 import '../../widgets/catalog_labels.dart';
 
 /// Result count, plus the buttons that open the filter and sort sheets.
@@ -17,26 +21,12 @@ class CatalogToolbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final countLabel = ref.watch(
-      catalogControllerProvider.select(
-        (state) => switch (state) {
-          AsyncValue(isLoading: true) => 'Loading…',
-          AsyncValue(hasError: true) => '',
-          // Only the loaded pages are counted.
-          AsyncValue(:final value?) when value.hasMore =>
-            '${value.paddles.length}+ paddles',
-          AsyncValue(:final value?) => paddleCountLabel(value.paddles.length),
-          _ => '',
-        },
-      ),
-    );
     final (:activeFilters, :sort) = ref.watch(
       catalogFilterProvider.select(
         (filter) =>
             (activeFilters: filter.activeFilterCount, sort: filter.sort),
       ),
     );
-    final theme = Theme.of(context);
 
     // Wraps the buttons below the count, and shortens the sort label, when
     // large text or a long label doesn't fit on one line.
@@ -46,15 +36,7 @@ class CatalogToolbar extends ConsumerWidget {
       spacing: 12,
       runSpacing: 4,
       children: [
-        Semantics(
-          liveRegion: true,
-          child: Text(
-            countLabel,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
+        const _ResultCount(),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -76,6 +58,71 @@ class CatalogToolbar extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+String _countLabel(AsyncValue<CatalogState> state) => switch (state) {
+  AsyncValue(isLoading: true) => 'Loading…',
+  AsyncValue(hasError: true) => '',
+  // Only the loaded pages are counted.
+  AsyncValue(:final value?) when value.hasMore =>
+    '${value.paddles.length}+ paddles',
+  AsyncValue(:final value?) => paddleCountLabel(value.paddles.length),
+  _ => '',
+};
+
+/// Not a live region: that would speak on every search, cutting off the
+/// echo of the keys. The count is announced once results stop changing.
+class _ResultCount extends ConsumerStatefulWidget {
+  const _ResultCount();
+
+  @override
+  ConsumerState<_ResultCount> createState() => _ResultCountState();
+}
+
+class _ResultCountState extends ConsumerState<_ResultCount> {
+  static const _announceDelay = Duration(seconds: 1);
+
+  Timer? _announceTimer;
+
+  @override
+  void dispose() {
+    _announceTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Only a finished load of a new query is announced: a new page keeps the
+    // query, and a load in progress drops any pending announcement.
+    ref.listen(
+      catalogControllerProvider.select(
+        (state) => switch (state) {
+          AsyncData(isLoading: false, :final value) => value.query,
+          _ => null,
+        },
+      ),
+      (_, query) {
+        _announceTimer?.cancel();
+        if (query == null) return;
+        _announceTimer = Timer(_announceDelay, () {
+          SemanticsService.sendAnnouncement(
+            View.of(context),
+            _countLabel(ref.read(catalogControllerProvider)),
+            Directionality.of(context),
+          );
+        });
+      },
+    );
+    final label = ref.watch(catalogControllerProvider.select(_countLabel));
+    final theme = Theme.of(context);
+
+    return Text(
+      label,
+      style: theme.textTheme.labelMedium?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }

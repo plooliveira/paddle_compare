@@ -10,7 +10,7 @@ import 'package:paddle_compare/app/catalog/state/catalog_state.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
-import '../../helpers/fake_paddle_repository.dart';
+import '../../../helpers/fake_paddle_repository.dart';
 
 /// Even indexes are standard, odd ones hybrid. Prices go up with the index.
 List<Paddle> _paddles(int count) => [

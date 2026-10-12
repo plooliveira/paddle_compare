@@ -24,7 +24,6 @@ class PaddleGrid extends ConsumerWidget {
       itemBuilder: (context, index) {
         final paddle = paddles[index];
         return PaddleCard(
-          key: ValueKey(paddle.id),
           paddle: paddle,
           onViewDetails: () => onViewDetails(paddle),
         );

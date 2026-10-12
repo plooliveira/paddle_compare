@@ -80,28 +80,6 @@ void main() {
     });
   });
 
-  group('CatalogFilter.hasActiveFilters', () {
-    test('is false by default and ignores sort and blank queries', () {
-      expect(const CatalogFilter().hasActiveFilters, isFalse);
-      expect(
-        const CatalogFilter(sort: PaddleSort.power).hasActiveFilters,
-        isFalse,
-      );
-      expect(const CatalogFilter(query: '   ').hasActiveFilters, isFalse);
-    });
-
-    test('is true when any criterion narrows the list', () {
-      expect(const CatalogFilter(query: 'x').hasActiveFilters, isTrue);
-      expect(
-        CatalogFilter(shapes: {PaddleShape.standard}).hasActiveFilters,
-        isTrue,
-      );
-      expect(const CatalogFilter(minPrice: 10).hasActiveFilters, isTrue);
-      expect(const CatalogFilter(maxPrice: 10).hasActiveFilters, isTrue);
-      expect(const CatalogFilter(inStockOnly: true).hasActiveFilters, isTrue);
-    });
-  });
-
   group('CatalogFilter.activeFilterCount', () {
     test('is zero by default and ignores search and sort', () {
       expect(const CatalogFilter().activeFilterCount, 0);

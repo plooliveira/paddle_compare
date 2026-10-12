@@ -133,6 +133,42 @@ void main() {
     expect(find.text('1 paddle'), findsOneWidget);
   });
 
+  testWidgets('announces the count once, a second after new results land', (
+    tester,
+  ) async {
+    final repository = FakePaddleRepository(_paddles(5));
+    await _pumpPage(tester, repository);
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+    expect(tester.takeAnnouncements(), [
+      isAccessibilityAnnouncement('5 paddles'),
+    ]);
+
+    repository.gate = Completer<void>();
+    await tester.enterText(find.byType(TextField), 'paddle 3');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    // A slow load says nothing.
+    await tester.pump(const Duration(seconds: 2));
+
+    expect(repository.queries.last.search, 'paddle 3');
+    expect(find.text('Loading…'), findsOneWidget);
+    expect(tester.takeAnnouncements(), isEmpty);
+
+    repository.gate!.complete();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 999));
+
+    expect(find.text('1 paddle'), findsOneWidget);
+    expect(tester.takeAnnouncements(), isEmpty);
+
+    await tester.pump(const Duration(milliseconds: 1));
+
+    expect(tester.takeAnnouncements(), [
+      isAccessibilityAnnouncement('1 paddle'),
+    ]);
+  });
+
   testWidgets('empty state clears the filters and the search field', (
     tester,
   ) async {
@@ -199,6 +235,22 @@ void main() {
     expect(find.text('NO IMAGE'), findsOneWidget);
     expect(find.text('Price unavailable'), findsOneWidget);
     expect(find.text('SOLD OUT'), findsOneWidget);
+  });
+
+  testWidgets('a screen reader reads each card as one button', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _pumpPage(tester, FakePaddleRepository(_paddles(1)));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getSemantics(find.byType(PaddleCard)),
+      isSemantics(
+        label: 'No image\nBrand\nPaddle 0\n\$100.00\nView details',
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
   });
 
   testWidgets('the filter sheet filters by shape and shows removable chips', (

@@ -24,77 +24,82 @@ class PaddleCard extends StatelessWidget {
     final textTheme = theme.textTheme;
     final price = paddle.priceUsd;
 
-    return Material(
-      color: colors.surface,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: colors.outlineVariant),
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onViewDetails,
-        // Screen readers get a single action: the button below.
-        excludeFromSemantics: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: imageAspectRatio,
-              child: ColoredBox(
-                color: colors.surfaceContainerHighest,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: PaddleImage(imagePath: paddle.imagePath),
+    // Screen readers stop once per card: brand, name, price and the button.
+    return MergeSemantics(
+      child: Material(
+        color: colors.surface,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: colors.outlineVariant),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onViewDetails,
+          // Screen readers get a single action: the button below.
+          excludeFromSemantics: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AspectRatio(
+                aspectRatio: imageAspectRatio,
+                child: ColoredBox(
+                  color: colors.surfaceContainerHighest,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: PaddleImage(imagePath: paddle.imagePath),
+                        ),
                       ),
+                      if (paddle.inStock == false)
+                        const Positioned(
+                          top: 10,
+                          left: 10,
+                          child: _SoldOutTag(),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      paddle.brand.toUpperCase(),
+                      semanticsLabel: paddle.brand,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.labelSmall,
                     ),
-                    if (paddle.inStock == false)
-                      const Positioned(top: 10, left: 10, child: _SoldOutTag()),
+                    const SizedBox(height: 6),
+                    _Name(paddle.name, style: textTheme.titleMedium!),
+                    const SizedBox(height: 10),
+                    Text(
+                      price != null ? formatUsd(price) : 'Price unavailable',
+                      style: price != null
+                          ? textTheme.titleSmall?.copyWith(
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            )
+                          : textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    paddle.brand.toUpperCase(),
-                    semanticsLabel: paddle.brand,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.labelSmall?.copyWith(fontSize: 10.5),
-                  ),
-                  const SizedBox(height: 6),
-                  _Name(paddle.name, style: textTheme.titleMedium!),
-                  const SizedBox(height: 10),
-                  Text(
-                    price != null ? formatUsd(price) : 'Price unavailable',
-                    style: price != null
-                        ? textTheme.titleSmall?.copyWith(
-                            fontSize: 15,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          )
-                        : textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
-              child: OutlinedButton(
-                onPressed: onViewDetails,
-                child: Text(
-                  'View details',
-                  semanticsLabel: 'View details for ${paddle.name}',
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+                child: OutlinedButton(
+                  onPressed: onViewDetails,
+                  child: const Text('View details'),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -144,7 +149,6 @@ class _SoldOutTag extends StatelessWidget {
           'SOLD OUT',
           semanticsLabel: 'Sold out',
           style: theme.textTheme.labelSmall?.copyWith(
-            fontSize: 9.5,
             fontWeight: FontWeight.w600,
             color: theme.colorScheme.onSurface,
           ),
