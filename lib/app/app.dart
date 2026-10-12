@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 
+import '../core/theme/app_theme.dart';
 import 'router.dart';
 
 class PaddleCompareApp extends ConsumerWidget {
@@ -11,7 +12,7 @@ class PaddleCompareApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Paddle Compare',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.green)),
+      theme: AppTheme.light(),
       routerConfig: ref.watch(routerProvider),
     );
   }
