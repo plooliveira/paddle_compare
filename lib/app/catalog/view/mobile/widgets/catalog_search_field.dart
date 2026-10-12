@@ -18,6 +18,7 @@ class CatalogSearchField extends StatelessWidget {
       onTapOutside: (_) => FocusScope.of(context).unfocus(),
       textInputAction: TextInputAction.search,
       autocorrect: false,
+      scrollPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       decoration: InputDecoration(
         hintText: 'Search by brand or name',
         prefixIcon: const Icon(Icons.search, size: 20),

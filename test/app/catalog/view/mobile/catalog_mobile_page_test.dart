@@ -389,4 +389,22 @@ void main() {
     expect(repository.offsets, [0, 12]);
     expect(find.text('20 paddles'), findsOneWidget);
   });
+
+  testWidgets('focusing the search keeps the scroll position', (tester) async {
+    await _pumpPage(tester, FakePaddleRepository(_paddles(12)));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+    final position = tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position;
+    final scrolled = position.pixels;
+    expect(scrolled, greaterThan(0));
+
+    await tester.tap(find.byType(TextField));
+    await tester.pumpAndSettle();
+
+    expect(position.pixels, scrolled);
+  });
 }
