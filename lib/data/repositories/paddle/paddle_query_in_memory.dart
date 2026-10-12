@@ -7,10 +7,13 @@ import 'models/paddle_sort.dart';
 extension PaddleQueryInMemory on PaddleQuery {
   /// The paddles that match, sorted. Ties keep the order of [paddles].
   List<Paddle> apply(Iterable<Paddle> paddles) {
-    final needle = search?.toLowerCase() ?? '';
+    final terms = [
+      for (final term in (search ?? '').toLowerCase().split(RegExp(r'\s+')))
+        if (term.isNotEmpty) term,
+    ];
     final matches = [
       for (final (index, paddle) in paddles.indexed)
-        if (_matches(paddle, needle)) (index, paddle),
+        if (_matches(paddle, terms)) (index, paddle),
     ];
     if (sort != PaddleSort.featured) {
       // List.sort is not stable, so ties fall back to the source order.
@@ -22,11 +25,12 @@ extension PaddleQueryInMemory on PaddleQuery {
     return List.unmodifiable(matches.map((match) => match.$2));
   }
 
-  bool _matches(Paddle paddle, String needle) {
-    if (needle.isNotEmpty &&
-        !paddle.brand.toLowerCase().contains(needle) &&
-        !paddle.name.toLowerCase().contains(needle)) {
-      return false;
+  /// Every search term must appear in the brand or the name, in any order, so
+  /// "apex summit" finds the Apex Court Summit.
+  bool _matches(Paddle paddle, List<String> terms) {
+    if (terms.isNotEmpty) {
+      final haystack = '${paddle.brand} ${paddle.name}'.toLowerCase();
+      if (!terms.every(haystack.contains)) return false;
     }
     if (shapes.isNotEmpty && !shapes.contains(paddle.shape)) return false;
     if (minPrice != null || maxPrice != null) {

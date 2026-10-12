@@ -172,6 +172,23 @@ void main() {
       );
     });
 
+    test('searches brand and name together, in any order', () async {
+      final repository = _repository([
+        _paddle('a', brand: 'Apex Court', name: 'Summit'),
+        _paddle('b', brand: 'Dinkworks', name: 'Reset'),
+        _paddle('c', brand: 'Other', name: 'Apex Clone'),
+      ]);
+
+      Future<List<String>> search(String text) =>
+          _ids(repository, query: PaddleQuery(search: text));
+
+      expect(await search('apex summit'), ['a']);
+      expect(await search('summit apex'), ['a']);
+      expect(await search('apex  sum'), ['a']);
+      expect(await search('apex clone'), ['c']);
+      expect(await search('apex reset'), isEmpty);
+    });
+
     test('filters by any selected shape and drops unknown shapes', () async {
       final repository = _repository([
         _paddle('a', shape: PaddleShape.standard),
