@@ -92,7 +92,6 @@ void main() {
     expect(find.byType(PaddleDetailDesktopPage), findsOneWidget);
     expect(find.text('Paddles'), findsOneWidget);
     expect(find.byType(BackButton), findsOneWidget);
-    // Nothing to compare yet.
     expect(find.byType(CompareTray), findsNothing);
 
     final image = tester.getRect(find.byType(PaddleDetailImage));

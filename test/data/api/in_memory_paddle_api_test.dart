@@ -20,7 +20,6 @@ Map<String, Object?> _paddle(
   if (power != null) 'ratings': {'power': power},
 };
 
-/// The ids `fetchPaddles` answers with.
 Future<List<String>> _ids(
   PaddleApi api, {
   String? search,

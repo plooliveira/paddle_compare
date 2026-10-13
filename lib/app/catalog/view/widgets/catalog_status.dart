@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/catalog_state.dart';
 
-/// What the catalog's results area shows.
 enum CatalogStatus {
   loading,
   refreshing,

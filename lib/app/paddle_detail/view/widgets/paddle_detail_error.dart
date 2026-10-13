@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/widgets/state_message.dart';
 import '../../controller/paddle_detail_controller.dart';
 
-/// Fills the page's body, centered, and scrolls if the window is too short.
 class PaddleDetailError extends ConsumerWidget {
   const PaddleDetailError({super.key});
 

@@ -42,7 +42,6 @@ class CompareSpecRow extends StatelessWidget {
   /// Null puts the label above the cells.
   final double? labelWidth;
 
-  /// Between two columns.
   final double gap;
 
   final Widget Function(Paddle) _cell;

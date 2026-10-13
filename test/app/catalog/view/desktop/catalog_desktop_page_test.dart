@@ -40,13 +40,11 @@ Finder _inTray(Finder finder) =>
 Finder _inComparison(Finder finder) =>
     find.descendant(of: find.byType(CompareView), matching: finder);
 
-/// The button of the card showing [name].
 Finder _cardButton(String name, String label) => find.descendant(
   of: find.widgetWithText(PaddleCard, name),
   matching: find.text(label),
 );
 
-/// Whether the button labeled [label] on the card showing [name] is enabled.
 bool _cardButtonEnabled(WidgetTester tester, String name, String label) =>
     tester
         .widget<OutlinedButton>(
@@ -153,7 +151,6 @@ void main() {
 
     expect(_url(router).queryParameters, {'sort': 'price-desc'});
     expect(find.text('Sort: Price: High to Low'), findsOneWidget);
-    // The menu closed.
     expect(find.byType(RadioMenuButton<PaddleSort>), findsNothing);
     final first = tester.getTopLeft(find.text('Paddle 4'));
     final second = tester.getTopLeft(find.text('Paddle 3'));

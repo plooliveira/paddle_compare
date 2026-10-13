@@ -11,7 +11,6 @@ class KeySpecsGrid extends StatelessWidget {
 
   final Paddle paddle;
 
-  /// 2 makes a 2×2 grid, 4 a single row.
   final int columns;
 
   @override

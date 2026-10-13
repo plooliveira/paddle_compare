@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-/// A titled group of spec rows, with a divider between rows.
 class CompareSection extends StatelessWidget {
   const CompareSection({super.key, required this.title, required this.rows});
 

@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/widgets/state_message.dart';
 import '../../../router.dart';
 
-/// Fills the page's body, centered, and scrolls if the window is too short.
 class PaddleDetailNotFound extends StatelessWidget {
   const PaddleDetailNotFound({super.key});
 
