@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'json_readers.dart';
+import '../../../../core/utils/json_readers.dart';
 
 part 'paddle_dimensions.freezed.dart';
 

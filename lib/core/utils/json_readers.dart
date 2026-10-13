@@ -26,3 +26,8 @@ bool? readBool(Object? value) => switch (value) {
   'false' => false,
   _ => null,
 };
+
+/// A string lowercased and without spaces, underscores or hyphens, so
+/// "Wide-Body" and "widebody" read the same.
+String? readToken(Object? value) =>
+    readString(value)?.toLowerCase().replaceAll(RegExp(r'[\s_-]'), '');

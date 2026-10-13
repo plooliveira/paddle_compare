@@ -1,13 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'json_readers.dart';
+import '../../../../core/utils/json_readers.dart';
+import '../../../../core/utils/units.dart';
 import 'paddle_dimensions.dart';
 import 'paddle_ratings.dart';
 import 'paddle_shape.dart';
 
 part 'paddle.freezed.dart';
-
-const _gramsPerOunce = 28.349523125;
 
 @freezed
 abstract class Paddle with _$Paddle {
@@ -73,7 +72,7 @@ double? _readWeightOz(Object? json) {
   if (value == null) return null;
   return switch (readString(map['unit'])?.toLowerCase()) {
     'oz' || 'ounce' || 'ounces' => value,
-    'g' || 'gram' || 'grams' => value / _gramsPerOunce,
+    'g' || 'gram' || 'grams' => value / gramsPerOunce,
     _ => null,
   };
 }

@@ -1,4 +1,4 @@
-import 'json_readers.dart';
+import '../../../../core/utils/json_readers.dart';
 
 enum PaddleShape {
   standard,
@@ -7,11 +7,9 @@ enum PaddleShape {
   widebody;
 
   static PaddleShape? tryParse(Object? value) {
-    final normalized = readString(value)
-        ?.toLowerCase()
-        .replaceAll(RegExp(r'[\s_-]'), '');
+    final token = readToken(value);
     for (final shape in values) {
-      if (shape.name == normalized) return shape;
+      if (shape.name == token) return shape;
     }
     return null;
   }
