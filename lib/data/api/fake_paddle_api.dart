@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 
 import '../../config/api_config.dart';
+import 'in_memory_paddle_api.dart';
 import 'paddle_api.dart';
 import 'paddle_api_exception.dart';
 
@@ -22,7 +23,33 @@ class FakePaddleApi implements PaddleApi {
   final String assetPath;
 
   @override
-  Future<Map<String, dynamic>> fetchPaddles() async {
+  Future<Map<String, dynamic>> fetchPaddles({
+    String? search,
+    List<String> shapes = const [],
+    double? minPrice,
+    double? maxPrice,
+    bool inStockOnly = false,
+    String? sort,
+    int offset = 0,
+    int? limit,
+  }) async => (await _load()).fetchPaddles(
+    search: search,
+    shapes: shapes,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    inStockOnly: inStockOnly,
+    sort: sort,
+    offset: offset,
+    limit: limit,
+  );
+
+  @override
+  Future<Map<String, dynamic>?> fetchPaddle(String id) async =>
+      (await _load()).fetchPaddle(id);
+
+  /// Waits like a network request, maybe fails like one, then loads the
+  /// asset as the server's catalog.
+  Future<InMemoryPaddleApi> _load() async {
     await Future<void>.delayed(_nextLatency());
 
     if (_random.nextDouble() < config.failureRate) {
@@ -43,10 +70,10 @@ class FakePaddleApi implements PaddleApi {
       throw PaddleApiException('Response is not valid JSON', cause: e);
     }
 
-    if (decoded is! Map<String, dynamic>) {
-      throw const PaddleApiException('Unexpected response shape');
+    if (decoded case {'paddles': final List<dynamic> items}) {
+      return InMemoryPaddleApi(items);
     }
-    return decoded;
+    throw const PaddleApiException('Unexpected response shape');
   }
 
   Duration _nextLatency() {

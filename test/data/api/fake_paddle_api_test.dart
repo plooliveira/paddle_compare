@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paddle_compare/config/api_config.dart';
 import 'package:paddle_compare/data/api/fake_paddle_api.dart';
+import 'package:paddle_compare/data/api/paddle_api.dart';
 import 'package:paddle_compare/data/api/paddle_api_exception.dart';
 
 class _StringBundle extends CachingAssetBundle {
@@ -39,6 +40,19 @@ void main() {
       expect(json['paddles'], hasLength(32));
     });
 
+    test('answers the query from the bundled catalog', () async {
+      final api = FakePaddleApi(config: _instant);
+
+      final json = await api.fetchPaddles(
+        sort: PaddleApi.sortPriceAsc,
+        limit: 5,
+      );
+
+      final paddles = json['paddles'] as List;
+      expect(paddles, hasLength(5));
+      expect(paddles.first['id'], 'third-shot-labs-practice-pal');
+    });
+
     test('throws PaddleApiException when the request fails', () {
       final api = FakePaddleApi(
         config: const ApiConfig(
@@ -64,6 +78,41 @@ void main() {
       final api = FakePaddleApi(bundle: _StringBundle('[]'), config: _instant);
 
       expect(api.fetchPaddles(), throwsA(isA<PaddleApiException>()));
+    });
+
+    test('fetchPaddle returns the bundled paddle with that id', () async {
+      final api = FakePaddleApi(config: _instant);
+
+      final json = await api.fetchPaddle('apex-court-summit-pro-14');
+
+      expect(json?['name'], 'Summit Pro 14');
+    });
+
+    test('fetchPaddle returns null for an unknown id', () async {
+      final api = FakePaddleApi(config: _instant);
+
+      expect(await api.fetchPaddle('missing'), isNull);
+    });
+
+    test('fetchPaddle throws PaddleApiException when the request fails', () {
+      final api = FakePaddleApi(
+        config: const ApiConfig(
+          minLatency: Duration.zero,
+          maxLatency: Duration.zero,
+          failureRate: 1,
+        ),
+      );
+
+      expect(api.fetchPaddle('a'), throwsA(isA<PaddleApiException>()));
+    });
+
+    test('fetchPaddle throws PaddleApiException without a paddle list', () {
+      final api = FakePaddleApi(
+        bundle: _StringBundle('{"paddles": {}}'),
+        config: _instant,
+      );
+
+      expect(api.fetchPaddle('a'), throwsA(isA<PaddleApiException>()));
     });
 
     test('responds within the configured latency window', () {

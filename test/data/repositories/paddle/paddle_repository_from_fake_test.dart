@@ -7,39 +7,59 @@ import 'package:paddle_compare/data/api/paddle_api_exception.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository_from_fake.dart';
 
+/// Answers with [response] and records what the repository asked for.
 class _StubPaddleApi implements PaddleApi {
   _StubPaddleApi({this.response = const {}, this.error});
 
   final Map<String, dynamic> response;
   final Exception? error;
 
+  /// The arguments of the last `fetchPaddles` call, by name.
+  Map<String, Object?>? catalogRequest;
+  final paddleRequests = <String>[];
+
   @override
-  Future<Map<String, dynamic>> fetchPaddles() async {
+  Future<Map<String, dynamic>> fetchPaddles({
+    String? search,
+    List<String> shapes = const [],
+    double? minPrice,
+    double? maxPrice,
+    bool inStockOnly = false,
+    String? sort,
+    int offset = 0,
+    int? limit,
+  }) async {
+    catalogRequest = {
+      'search': search,
+      'shapes': shapes,
+      'minPrice': minPrice,
+      'maxPrice': maxPrice,
+      'inStockOnly': inStockOnly,
+      'sort': sort,
+      'offset': offset,
+      'limit': limit,
+    };
     if (error case final error?) throw error;
     return response;
   }
+
+  @override
+  Future<Map<String, dynamic>?> fetchPaddle(String id) async {
+    paddleRequests.add(id);
+    if (error case final error?) throw error;
+    for (final item in response['paddles'] as List) {
+      if (item['id'] == id) return item;
+    }
+    return null;
+  }
 }
 
-Map<String, Object?> _paddle(
-  String id, {
-  String brand = 'Brand',
-  String? name,
-  double? price,
-  PaddleShape? shape,
-  bool? inStock,
-  int? power,
-}) => {
+Map<String, Object?> _paddle(String id, {double? price}) => {
   'id': id,
-  'brand': brand,
-  'name': name ?? 'Name $id',
+  'brand': 'Brand',
+  'name': 'Name $id',
   'priceUsd': ?price,
-  'shape': ?shape?.name,
-  'inStock': ?inStock,
-  if (power != null) 'ratings': {'power': power},
 };
-
-PaddleRepositoryFromFake _repository(List<Map<String, Object?>> paddles) =>
-    PaddleRepositoryFromFake(_StubPaddleApi(response: {'paddles': paddles}));
 
 /// Reads the bundled paddles.json with no latency or failures.
 PaddleRepositoryFromFake _bundledRepository() {
@@ -63,34 +83,78 @@ List<Paddle> _value(Result<List<Paddle>> result) => switch (result) {
 Future<List<String>> _ids(
   PaddleRepository repository, {
   PaddleQuery query = const PaddleQuery(),
-  int offset = 0,
   int? limit,
 }) async {
-  final result = await repository.getPaddles(
-    query: query,
-    offset: offset,
-    limit: limit,
-  );
+  final result = await repository.getPaddles(query: query, limit: limit);
   return [for (final paddle in _value(result)) paddle.id];
 }
 
 void main() {
   group('PaddleRepositoryFromFake.getPaddles', () {
-    test('returns parsed paddles', () async {
+    test('forwards the query, offset and limit to the api', () async {
+      final api = _StubPaddleApi(response: {'paddles': []});
+      final repository = PaddleRepositoryFromFake(api);
+
+      await repository.getPaddles(
+        query: PaddleQuery(
+          search: 'apex',
+          shapes: {PaddleShape.hybrid, PaddleShape.widebody},
+          minPrice: 100,
+          maxPrice: 200,
+          inStockOnly: true,
+          sort: PaddleSort.priceHighToLow,
+        ),
+        offset: 12,
+        limit: 12,
+      );
+
+      expect(api.catalogRequest, {
+        'search': 'apex',
+        'shapes': ['hybrid', 'widebody'],
+        'minPrice': 100,
+        'maxPrice': 200,
+        'inStockOnly': true,
+        'sort': PaddleApi.sortPriceDesc,
+        'offset': 12,
+        'limit': 12,
+      });
+      expect(api.paddleRequests, isEmpty);
+    });
+
+    test('sends each sort as its api value', () async {
+      final api = _StubPaddleApi(response: {'paddles': []});
+      final repository = PaddleRepositoryFromFake(api);
+
+      Future<Object?> sentSort(PaddleSort sort) async {
+        await repository.getPaddles(query: PaddleQuery(sort: sort));
+        return api.catalogRequest?['sort'];
+      }
+
+      expect(await sentSort(PaddleSort.featured), isNull);
+      expect(await sentSort(PaddleSort.priceLowToHigh), PaddleApi.sortPriceAsc);
+      expect(
+        await sentSort(PaddleSort.priceHighToLow),
+        PaddleApi.sortPriceDesc,
+      );
+      expect(await sentSort(PaddleSort.power), PaddleApi.sortPower);
+    });
+
+    test('parses the page in the order the api sent it', () async {
       final repository = PaddleRepositoryFromFake(
         _StubPaddleApi(
           response: {
-            'paddles': [_paddle('a'), _paddle('b')],
+            'paddles': [_paddle('b', price: 99.5), _paddle('a')],
           },
         ),
       );
 
       final paddles = _value(await repository.getPaddles());
 
-      expect(paddles.map((paddle) => paddle.id), ['a', 'b']);
+      expect(paddles.map((paddle) => paddle.id), ['b', 'a']);
+      expect(paddles.first.priceUsd, 99.5);
     });
 
-    test('skips invalid entries and duplicate ids', () async {
+    test('skips entries it cannot parse', () async {
       final repository = PaddleRepositoryFromFake(
         _StubPaddleApi(
           response: {
@@ -98,7 +162,6 @@ void main() {
               _paddle('a'),
               {'id': 'no-name'},
               'garbage',
-              {..._paddle('a'), 'name': 'Duplicate'},
               _paddle('b'),
             ],
           },
@@ -108,7 +171,6 @@ void main() {
       final paddles = _value(await repository.getPaddles());
 
       expect(paddles.map((paddle) => paddle.id), ['a', 'b']);
-      expect(paddles.first.name, 'Name a');
     });
 
     test('returns an error when the payload has no paddle list', () async {
@@ -136,316 +198,72 @@ void main() {
       expect(result, isA<Error<List<Paddle>>>());
       expect((result as Error<List<Paddle>>).error, exception);
     });
-
-    test('parses the bundled paddles.json', () async {
-      final paddles = _value(await _bundledRepository().getPaddles());
-
-      expect(paddles, hasLength(32));
-    });
   });
 
-  group('PaddleRepositoryFromFake.getPaddles query', () {
-    test('keeps the source order by default', () async {
-      final repository = _repository([
-        _paddle('a', price: 300),
-        _paddle('b', price: 100),
-        _paddle('c', price: 200),
-      ]);
+  group('PaddleRepositoryFromFake.getPaddles over the bundled data', () {
+    final repository = _bundledRepository();
 
-      expect(await _ids(repository), ['a', 'b', 'c']);
+    test('parses every paddle of paddles.json', () async {
+      expect(await _ids(repository), hasLength(32));
     });
 
-    test('searches brand or name, ignoring case', () async {
-      final repository = _repository([
-        _paddle('a', brand: 'Apex Court', name: 'Summit'),
-        _paddle('b', brand: 'Dinkworks', name: 'Reset'),
-        _paddle('c', brand: 'Other', name: 'Apex Clone'),
-      ]);
-
-      expect(await _ids(repository, query: const PaddleQuery(search: 'apex')), [
-        'a',
-        'c',
-      ]);
-      expect(
-        await _ids(repository, query: const PaddleQuery(search: 'RESET')),
-        ['b'],
-      );
-    });
-
-    test('searches brand and name together, in any order', () async {
-      final repository = _repository([
-        _paddle('a', brand: 'Apex Court', name: 'Summit'),
-        _paddle('b', brand: 'Dinkworks', name: 'Reset'),
-        _paddle('c', brand: 'Other', name: 'Apex Clone'),
-      ]);
-
-      Future<List<String>> search(String text) =>
-          _ids(repository, query: PaddleQuery(search: text));
-
-      expect(await search('apex summit'), ['a']);
-      expect(await search('summit apex'), ['a']);
-      expect(await search('apex  sum'), ['a']);
-      expect(await search('apex clone'), ['c']);
-      expect(await search('apex reset'), isEmpty);
-    });
-
-    test('filters by any selected shape and drops unknown shapes', () async {
-      final repository = _repository([
-        _paddle('a', shape: PaddleShape.standard),
-        _paddle('b', shape: PaddleShape.hybrid),
-        _paddle('c', shape: PaddleShape.elongated),
-        _paddle('d'),
-      ]);
-
-      final query = PaddleQuery(
-        shapes: {PaddleShape.standard, PaddleShape.elongated},
+    test('by lowest price starts with the cheapest paddle', () async {
+      final ids = await _ids(
+        repository,
+        query: const PaddleQuery(sort: PaddleSort.priceLowToHigh),
+        limit: 12,
       );
 
-      expect(await _ids(repository, query: query), ['a', 'c']);
+      expect(ids.first, 'third-shot-labs-practice-pal');
     });
 
-    test(
-      'filters by inclusive price bounds and drops unknown prices',
-      () async {
-        final repository = _repository([
-          _paddle('a', price: 99),
-          _paddle('b', price: 150),
-          _paddle('c', price: 200),
-          _paddle('d', price: 250),
-          _paddle('e'),
-        ]);
-
-        expect(
-          await _ids(
-            repository,
-            query: const PaddleQuery(minPrice: 150, maxPrice: 200),
-          ),
-          ['b', 'c'],
-        );
-        expect(
-          await _ids(repository, query: const PaddleQuery(minPrice: 200)),
-          ['c', 'd'],
-        );
-        expect(
-          await _ids(repository, query: const PaddleQuery(maxPrice: 100)),
-          ['a'],
-        );
-      },
-    );
-
-    test('in stock only drops out-of-stock and unknown stock', () async {
-      final repository = _repository([
-        _paddle('a', inStock: true),
-        _paddle('b', inStock: false),
-        _paddle('c'),
-      ]);
-
-      expect(
-        await _ids(repository, query: const PaddleQuery(inStockOnly: true)),
-        ['a'],
-      );
-    });
-
-    test('combines every criterion', () async {
-      final repository = _repository([
-        _paddle(
-          'a',
-          brand: 'Apex',
-          price: 150,
-          shape: PaddleShape.hybrid,
-          inStock: true,
-        ),
-        _paddle(
-          'b',
-          brand: 'Apex',
-          price: 150,
-          shape: PaddleShape.hybrid,
-          inStock: false,
-        ),
-        _paddle(
-          'c',
-          brand: 'Apex',
-          price: 300,
-          shape: PaddleShape.hybrid,
-          inStock: true,
-        ),
-        _paddle(
-          'd',
-          brand: 'Other',
-          price: 150,
-          shape: PaddleShape.hybrid,
-          inStock: true,
-        ),
-      ]);
-
-      final query = PaddleQuery(
-        search: 'apex',
-        shapes: {PaddleShape.hybrid},
-        maxPrice: 200,
-        inStockOnly: true,
+    test('by power starts with both paddles rated 9', () async {
+      final ids = await _ids(
+        repository,
+        query: const PaddleQuery(sort: PaddleSort.power),
+        limit: 12,
       );
 
-      expect(await _ids(repository, query: query), ['a']);
-    });
-
-    group('sort', () {
-      final repository = _repository([
-        _paddle('a', price: 200, power: 5),
-        _paddle('b', power: 9),
-        _paddle('c', price: 100),
-        _paddle('d', price: 200, power: 9),
-        _paddle('e', price: 150, power: 7),
-      ]);
-
-      test('price low to high puts unknown prices last', () async {
-        const query = PaddleQuery(sort: PaddleSort.priceLowToHigh);
-
-        expect(await _ids(repository, query: query), ['c', 'e', 'a', 'd', 'b']);
-      });
-
-      test('price high to low puts unknown prices last', () async {
-        const query = PaddleQuery(sort: PaddleSort.priceHighToLow);
-
-        expect(await _ids(repository, query: query), ['a', 'd', 'e', 'c', 'b']);
-      });
-
-      test('power puts the highest first and unknown ratings last', () async {
-        const query = PaddleQuery(sort: PaddleSort.power);
-
-        expect(await _ids(repository, query: query), ['b', 'd', 'e', 'a', 'c']);
-      });
-
-      test('keeps the source order for ties', () async {
-        final ids = 'abcdefghij'.split('');
-        final tied = _repository([for (final id in ids) _paddle(id)]);
-        const query = PaddleQuery(sort: PaddleSort.priceLowToHigh);
-
-        expect(await _ids(tied, query: query), ids);
-      });
-    });
-  });
-
-  group('PaddleRepositoryFromFake.getPaddles pages of a query', () {
-    // Prices out of source order, with ties.
-    final repository = _repository([
-      for (var i = 0; i < 25; i++)
-        _paddle(
-          'p$i',
-          price: 50.0 + (i * 7 % 10) * 10,
-          shape: i.isEven ? PaddleShape.standard : PaddleShape.hybrid,
-        ),
-    ]);
-
-    test(
-      'sorted pages add up to the whole sorted list, without overlaps',
-      () async {
-        const query = PaddleQuery(sort: PaddleSort.priceLowToHigh);
-
-        final pages = [
-          for (var offset = 0; offset < 25; offset += 12)
-            ...await _ids(repository, query: query, offset: offset, limit: 12),
-        ];
-
-        expect(pages, await _ids(repository, query: query));
-        expect(pages.toSet(), hasLength(25));
-      },
-    );
-
-    test('applies the offset after the filter', () async {
-      final query = PaddleQuery(shapes: {PaddleShape.hybrid});
-
-      expect(await _ids(repository, query: query, offset: 2, limit: 2), [
-        'p5',
-        'p7',
+      expect(ids.take(2), [
+        'third-shot-labs-drive-shot-elongated',
+        'erne-athletics-airborne-14',
       ]);
     });
-  });
 
-  group(
-    'PaddleRepositoryFromFake.getPaddles first page of the bundled data',
-    () {
-      final repository = _bundledRepository();
-
-      test('by lowest price starts with the cheapest paddle', () async {
-        final ids = await _ids(
-          repository,
-          query: const PaddleQuery(sort: PaddleSort.priceLowToHigh),
-          limit: 12,
-        );
-
-        expect(ids.first, 'third-shot-labs-practice-pal');
-      });
-
-      test('by power starts with both paddles rated 9', () async {
-        final ids = await _ids(
-          repository,
-          query: const PaddleQuery(sort: PaddleSort.power),
-          limit: 12,
-        );
-
-        expect(ids.take(2), [
-          'third-shot-labs-drive-shot-elongated',
-          'erne-athletics-airborne-14',
-        ]);
-      });
-    },
-  );
-
-  group('PaddleRepositoryFromFake.getPaddles pagination', () {
-    final repository = PaddleRepositoryFromFake(
-      _StubPaddleApi(
-        response: {
-          'paddles': [
-            _paddle('a'),
-            {..._paddle('a'), 'name': 'Duplicate'},
-            _paddle('b'),
-            _paddle('c'),
-            _paddle('d'),
-          ],
-        },
-      ),
-    );
-
-    test('returns the page at offset, after removing duplicates', () async {
-      final paddles = _value(await repository.getPaddles(offset: 1, limit: 2));
-
-      expect(paddles.map((paddle) => paddle.id), ['b', 'c']);
-    });
-
-    test('returns a short last page', () async {
-      final paddles = _value(await repository.getPaddles(offset: 3, limit: 2));
-
-      expect(paddles.map((paddle) => paddle.id), ['d']);
-    });
-
-    test('returns everything from offset when there is no limit', () async {
-      final paddles = _value(await repository.getPaddles(offset: 2));
-
-      expect(paddles.map((paddle) => paddle.id), ['c', 'd']);
-    });
-
-    test('returns an empty list for an offset past the end', () async {
-      expect(
-        _value(await repository.getPaddles(offset: 10, limit: 2)),
-        isEmpty,
+    test('filters by shape', () async {
+      final ids = await _ids(
+        repository,
+        query: PaddleQuery(shapes: {PaddleShape.widebody}),
       );
+
+      expect(ids, hasLength(4));
     });
   });
 
   group('PaddleRepositoryFromFake.getPaddleById', () {
-    final repository = PaddleRepositoryFromFake(
-      _StubPaddleApi(
-        response: {
-          'paddles': [_paddle('a'), _paddle('b')],
-        },
-      ),
-    );
+    late _StubPaddleApi api;
+    late PaddleRepositoryFromFake repository;
 
-    test('returns the matching paddle', () async {
+    setUp(() {
+      api = _StubPaddleApi(
+        response: {
+          'paddles': [
+            _paddle('a'),
+            _paddle('b'),
+            {'id': 'no-name'},
+          ],
+        },
+      );
+      repository = PaddleRepositoryFromFake(api);
+    });
+
+    test('asks the api for that paddle only', () async {
       final result = await repository.getPaddleById('b');
 
       expect(result, isA<Ok<Paddle?>>());
       expect((result as Ok<Paddle?>).value?.id, 'b');
+      expect(api.paddleRequests, ['b']);
+      expect(api.catalogRequest, isNull);
     });
 
     test('returns Ok(null) for an unknown id', () async {
@@ -453,6 +271,23 @@ void main() {
 
       expect(result, isA<Ok<Paddle?>>());
       expect((result as Ok<Paddle?>).value, isNull);
+    });
+
+    test('returns Ok(null) for an entry it cannot parse', () async {
+      final result = await repository.getPaddleById('no-name');
+
+      expect(result, isA<Ok<Paddle?>>());
+      expect((result as Ok<Paddle?>).value, isNull);
+    });
+
+    test('finds every paddle of the bundled catalog', () async {
+      final repository = _bundledRepository();
+      final paddles = _value(await repository.getPaddles());
+
+      for (final paddle in paddles) {
+        final result = await repository.getPaddleById(paddle.id);
+        expect((result as Ok<Paddle?>).value, paddle);
+      }
     });
 
     test('forwards api errors', () async {

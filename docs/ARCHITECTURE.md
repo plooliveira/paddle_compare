@@ -30,7 +30,8 @@ lib/
 ├── data/                      # Data layer (Model)
 │   ├── api/                   # Services: talk to the outside world, return raw JSON
 │   │   ├── <name>_api.dart            # Contract (abstract interface class)
-│   │   ├── fake_<name>_api.dart       # Implementation
+│   │   ├── fake_<name>_api.dart       # Implementation (latency, failures, loads the asset)
+│   │   ├── in_memory_<name>_api.dart  # Answers requests from raw JSON in memory, like a server
 │   │   ├── <name>_api_exception.dart
 │   │   └── <name>_api_provider.dart
 │   └── repositories/          # Single entry point for data, used by controllers
@@ -57,7 +58,7 @@ Feature packages (separate Dart packages for complex features) are out of scope 
 | `app/<feature>/controller/` | Controller | Riverpod `@riverpod` notifier/provider. Holds feature state, calls repositories, exposes `AsyncValue`. |
 | `data/repositories/<domain>` | Model | Exposes domain models to controllers as `Result<T>`. Hides where the data comes from. |
 | `data/repositories/<domain>/models` | Model | Immutable models (freezed). Parsing is tolerant: bad or missing fields become `null` or are normalized (e.g. weight units), never crash. |
-| `data/api` | Model | Raw I/O. Here: loads `paddles.json` with simulated 300–800 ms latency and random failures. |
+| `data/api` | Model | Raw I/O, shaped like a backend's endpoints. Here: loads `paddles.json` with simulated 300–800 ms latency and random failures, and answers search, filters, sort and pagination over it. |
 
 No reactive cache in the data layer for now: repositories fetch on demand, and Riverpod providers handle caching and invalidation.
 
@@ -75,12 +76,14 @@ Each screen has a mobile and a desktop variant in its own file. The entry view (
 Each folder under `data/repositories/` is an isolated module: its contract, implementations, provider, models and parsing helpers live together. Everything a repository needs to work is inside its folder, except the services it reads from (`data/api`) and shared utilities (`core`, `config`).
 
 - Models belong to the repository that produces them and are never shared between repositories.
-- The contract file (`<domain>_repository.dart`) is the module's public entry point: it exports the models and the repository exception. Code outside the module imports only the contract (and the provider), never `models/` directly. Internal helpers such as `json_readers.dart` are not exported.
+- The contract file (`<domain>_repository.dart`) is the module's public entry point: it exports the models and the repository exception. Code outside the module imports only the contract (and the provider), never `models/` directly.
 - A repository module never imports another repository module. If two repositories need a similar model, each one defines its own.
 - The only thing a repository takes from `data/api` is the API contract (`PaddleApi`), never a concrete service (`FakePaddleApi`) or other API types. The concrete one is chosen in the provider. Errors raised by the repository itself use its own exception type.
 - Repositories return `Result<T>` (`core/utils/result.dart`, from the [Flutter architecture guide](https://docs.flutter.dev/app-architecture/design-patterns/result)) and never throw. "Not found" is `Result.ok(null)`, not an error.
-- Repositories answer like a backend: search, filters, sort and pagination are their job, never the controller's. `PaddleRepository.getPaddles(query:, offset:, limit:)` takes a `PaddleQuery` and keeps the order stable across pages, so consecutive pages never overlap. It returns `List<Paddle>`, with no total.
-- `PaddleRepositoryFromFake` stands in for the server. The API returns the whole catalog, so the fake deduplicates it, runs the query in memory (`paddle_query_in_memory.dart`, internal to the module) and slices the page from the result. An HTTP implementation would turn the `PaddleQuery` into request parameters instead. `PaddleApi` doesn't filter: doing it on raw JSON would duplicate the tolerant parsing.
+- Search, filters, sort and pagination are the backend's job, never the controller's or the repository's. `PaddleRepository.getPaddles(query:, offset:, limit:)` takes a `PaddleQuery`, and `PaddleRepositoryFromFake` only translates it into `PaddleApi.fetchPaddles` parameters (shape names, `PaddleApi.sort*` values) and parses the page it gets back. The order is stable across pages, so consecutive pages never overlap. It returns `List<Paddle>`, with no total.
+- A single paddle has its own endpoint, like `GET /paddles/:id`: `getPaddleById` calls `PaddleApi.fetchPaddle(id)` and never loads the catalog. The API answers `null` for an unknown id (a 404), and the repository turns that, or an entry it can't parse, into `Result.ok(null)`.
+- `PaddleApi` takes primitive parameters, like an HTTP client would send, because `data/api` can't import a repository's models. `FakePaddleApi` simulates the network and loads the asset, then hands the request to `InMemoryPaddleApi`, which stands in for the server: it keeps the entries that make a paddle (the first one per id), filters, sorts and slices them on the raw JSON, and sends the entries back as stored.
+- The server and the app must agree on what each field means, or a paddle could match a price filter and show no price. `InMemoryPaddleApi` follows the parsing rules of `Paddle.tryFromJson` with the same readers (`core/utils/json_readers.dart`): ids are trimmed, shapes are compared as tokens ("Wide-Body" is `widebody`), prices must be positive and ratings 0–10. A change to a parsing rule the query depends on has to be made in both.
 
 ## Dependency rules
 
@@ -130,4 +133,4 @@ config can be read by any layer
 
 Test doubles for a contract (stub API, fake repository) live in the test file that uses them. Move one to a shared helper only when a second test file needs it.
 
-Exception to "outside the module, only the contract", for tests only: `test/helpers/fake_paddle_repository.dart` imports the module-internal `paddle_query_in_memory.dart`, so the fake runs queries exactly like `PaddleRepositoryFromFake` instead of duplicating the filter logic.
+`test/helpers/fake_paddle_repository.dart` serves its `Paddle`s through the real `PaddleRepositoryFromFake` over an `InMemoryPaddleApi` (it turns them back into JSON), so controller and view tests run queries exactly like the app, with no latency, instead of duplicating the filter logic.

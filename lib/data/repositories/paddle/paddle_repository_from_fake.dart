@@ -1,6 +1,5 @@
 import '../../../core/utils/result.dart';
 import '../../api/paddle_api.dart';
-import 'paddle_query_in_memory.dart';
 import 'paddle_repository.dart';
 
 class PaddleRepositoryFromFake implements PaddleRepository {
@@ -16,26 +15,31 @@ class PaddleRepositoryFromFake implements PaddleRepository {
   }) async {
     assert(offset >= 0 && (limit == null || limit >= 0));
     try {
-      final json = await _api.fetchPaddles();
+      final json = await _api.fetchPaddles(
+        search: query.search,
+        shapes: [for (final shape in query.shapes) shape.name],
+        minPrice: query.minPrice,
+        maxPrice: query.maxPrice,
+        inStockOnly: query.inStockOnly,
+        sort: switch (query.sort) {
+          PaddleSort.featured => null,
+          PaddleSort.priceLowToHigh => PaddleApi.sortPriceAsc,
+          PaddleSort.priceHighToLow => PaddleApi.sortPriceDesc,
+          PaddleSort.power => PaddleApi.sortPower,
+        },
+        offset: offset,
+        limit: limit,
+      );
       final items = json['paddles'];
       if (items is! List) {
         return const Result.error(
           PaddleRepositoryException('Unexpected response shape'),
         );
       }
-
-      final paddlesById = <String, Paddle>{};
-      for (final item in items) {
-        final paddle = Paddle.tryFromJson(item);
-        if (paddle != null) paddlesById.putIfAbsent(paddle.id, () => paddle);
-      }
-      // This is where the fake stands in for the server: the API returns the
-      // whole catalog, so the query runs here, after deduplication, and the
-      // page is sliced from the result. An HTTP implementation would turn
-      // the query into request parameters instead.
-      final page = query.apply(paddlesById.values).skip(offset);
       return Result.ok(
-        List.unmodifiable(limit == null ? page : page.take(limit)),
+        List.unmodifiable([
+          for (final item in items) ?Paddle.tryFromJson(item),
+        ]),
       );
     } on Exception catch (exception) {
       return Result.error(exception);
@@ -44,14 +48,11 @@ class PaddleRepositoryFromFake implements PaddleRepository {
 
   @override
   Future<Result<Paddle?>> getPaddleById(String id) async {
-    final result = await getPaddles();
-    switch (result) {
-      case Ok<List<Paddle>>():
-        return Result.ok(
-          result.value.where((paddle) => paddle.id == id).firstOrNull,
-        );
-      case Error<List<Paddle>>():
-        return Result.error(result.error);
+    try {
+      final json = await _api.fetchPaddle(id);
+      return Result.ok(json == null ? null : Paddle.tryFromJson(json));
+    } on Exception catch (exception) {
+      return Result.error(exception);
     }
   }
 }
