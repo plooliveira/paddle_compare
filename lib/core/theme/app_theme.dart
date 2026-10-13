@@ -1,3 +1,6 @@
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show CupertinoPageTransitionsBuilder;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app_colors.dart';
@@ -44,6 +47,15 @@ abstract final class AppTheme {
       textTheme: textTheme,
       scaffoldBackgroundColor: AppColors.canvas,
       splashFactory: InkRipple.splashFactory,
+      pageTransitionsTheme: _pageTransitionsTheme,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.canvas,
+        foregroundColor: AppColors.ink,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: const Color(0x00000000),
+        titleTextStyle: textTheme.titleMedium,
+      ),
       dividerTheme: const DividerThemeData(
         color: AppColors.hairline,
         thickness: 1,
@@ -116,6 +128,16 @@ abstract final class AppTheme {
           shape: const RoundedRectangleBorder(borderRadius: _radius),
           textStyle: textTheme.labelLarge,
         ),
+      ),
+      expansionTileTheme: const ExpansionTileThemeData(
+        tilePadding: EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+        iconColor: AppColors.ink,
+        collapsedIconColor: AppColors.ink,
+        textColor: AppColors.ink,
+        collapsedTextColor: AppColors.ink,
+        shape: Border(),
+        collapsedShape: Border(),
       ),
       chipTheme: ChipThemeData(
         color: WidgetStateProperty.resolveWith(
@@ -204,6 +226,25 @@ abstract final class AppTheme {
     );
   }
 
+  /// Pages slide in from the right on phones, with the swipe-back gesture
+  /// (the system back still works on Android, without the predictive-back
+  /// preview). On the web the browser owns navigation and its own back
+  /// gesture, so every platform fades. Windows and Linux keep the default.
+  static final _pageTransitionsTheme = PageTransitionsTheme(
+    builders: kIsWeb
+        ? {
+            for (final platform in TargetPlatform.values)
+              platform: const _FadePageTransitionsBuilder(),
+          }
+        : const {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+            TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+          },
+  );
+
   static TextTheme _textTheme() {
     const serifStyle = TextStyle(fontFamily: serif, color: AppColors.ink);
     const sansStyle = TextStyle(fontFamily: sans, color: AppColors.ink);
@@ -244,4 +285,24 @@ abstract final class AppTheme {
       ),
     );
   }
+}
+
+/// A short cross-fade, like a page load in the browser.
+class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadePageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 200);
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => FadeTransition(
+    opacity: CurveTween(curve: Curves.easeOut).animate(animation),
+    child: child,
+  );
 }
