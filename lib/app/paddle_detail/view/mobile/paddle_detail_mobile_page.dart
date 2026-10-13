@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/utils/form_factor.dart';
 import '../../../../core/widgets/fading_back_button.dart';
 import '../../../../core/widgets/state_message.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
@@ -19,24 +20,12 @@ import 'widgets/compare_bar.dart';
 class PaddleDetailMobilePage extends ConsumerWidget {
   const PaddleDetailMobilePage({super.key});
 
-  /// Adds [paddle] to the comparison of the catalog underneath. If that fills
-  /// it, the comparison opens, like a card's "Compare" button. Otherwise the
-  /// catalog comes back, with the paddle in its tray: a `go` that keeps its
-  /// page and filter, so the grid doesn't reload.
-  void _addToCompare(BuildContext context, Paddle paddle) {
-    final catalog = CatalogRoute.of(context);
-    final next = catalog.withCompare([...catalog.compareIds, paddle.id]);
-    if (next.compareIds.length >= CompareLimits.mobile) {
-      next.goCompare(context);
-    } else {
-      next.go(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(paddleDetailControllerProvider);
     final compareIds = ref.watch(compareIdsProvider);
+    // This page stands in for the desktop variant too.
+    final compareLimit = CompareLimits.of(FormFactor.of(context));
 
     CompareBar compareBarFor(Paddle paddle) {
       if (compareIds.contains(paddle.id)) {
@@ -46,10 +35,14 @@ class PaddleDetailMobilePage extends ConsumerWidget {
           icon: Icons.check,
         );
       }
-      if (compareIds.length >= CompareLimits.mobile) {
+      if (compareIds.length >= compareLimit) {
         return const CompareBar(onCompare: null, label: 'Compare is full');
       }
-      return CompareBar(onCompare: () => _addToCompare(context, paddle));
+      return CompareBar(
+        onCompare: () =>
+            CatalogRoute.of(context)
+                .addToCompare(context, paddle.id, limit: compareLimit),
+      );
     }
 
     final (body, compareBar) = switch (detail) {

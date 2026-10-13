@@ -36,18 +36,6 @@ class PaddleGrid extends ConsumerWidget {
       compare: ref.read(compareIdsProvider),
     );
 
-    void addToCompare(Paddle paddle) {
-      final next = route().withCompare([
-        ...ref.read(compareIdsProvider),
-        paddle.id,
-      ]);
-      if (next.compareIds.length >= compareLimit) {
-        next.goCompare(context);
-      } else {
-        next.goInPlace(context);
-      }
-    }
-
     return CardGridSliver(
       layout: layout,
       itemCount: paddles.length,
@@ -58,7 +46,11 @@ class PaddleGrid extends ConsumerWidget {
           paddle: paddle,
           onViewDetails: () => route().pushDetails(context, paddle.id),
           onCompare: canCompare && !isCompared
-              ? () => addToCompare(paddle)
+              ? () => route().addToCompare(
+                  context,
+                  paddle.id,
+                  limit: compareLimit,
+                )
               : null,
           isCompared: isCompared,
         );

@@ -109,6 +109,25 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
     compare: ids,
   );
 
+  /// Adds [id] to the comparison. If that makes [limit] paddles, the
+  /// comparison opens. Otherwise the catalog shows with the paddle in its
+  /// tray: in place from the catalog, or back from a page above it, which
+  /// leaves with its pop animation. Either way the catalog keeps its page and
+  /// filter, so the grid doesn't reload.
+  ///
+  /// [limit] comes from the caller (`CompareLimits.of`): routes don't apply
+  /// form-factor rules.
+  void addToCompare(BuildContext context, String id, {required int limit}) {
+    final next = withCompare([...compareIds, id]);
+    if (next.compareIds.length >= limit) {
+      next.goCompare(context);
+    } else if (GoRouterState.of(context).uri.path == Uri.parse(location).path) {
+      next.goInPlace(context);
+    } else {
+      next.go(context);
+    }
+  }
+
   /// Updates the URL without a history entry, so Back leaves the catalog
   /// instead of undoing filters one by one.
   void goInPlace(BuildContext context) =>
