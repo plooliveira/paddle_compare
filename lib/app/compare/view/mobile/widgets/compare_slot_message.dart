@@ -2,8 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import 'compare_slot_header.dart';
 
-/// Stands in for a column's paddle when it can't be shown: not found, or
-/// failed to load. Takes the illustration's place, so the columns line up.
 class CompareSlotMessage extends StatelessWidget {
   const CompareSlotMessage({
     super.key,
@@ -14,8 +12,6 @@ class CompareSlotMessage extends StatelessWidget {
 
   final IconData icon;
   final String title;
-
-  /// Usually a single button.
   final Widget? action;
 
   @override

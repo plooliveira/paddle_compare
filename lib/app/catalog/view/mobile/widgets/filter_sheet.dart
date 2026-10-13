@@ -9,7 +9,6 @@ import '../../../controller/catalog_controller.dart';
 import '../../../controller/catalog_filter.dart';
 import '../../widgets/catalog_labels.dart';
 
-/// Changes apply as they are made; the footer button only closes the sheet.
 class FilterSheet extends ConsumerStatefulWidget {
   const FilterSheet({super.key});
 
@@ -46,7 +45,6 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
   @override
   Widget build(BuildContext context) {
     final filter = ref.watch(catalogFilterProvider);
-    // Only a finished, complete result has a count worth showing.
     final count = ref.watch(
       catalogControllerProvider.select(
         (state) => switch (state) {
@@ -204,7 +202,6 @@ const _priceStep = 10.0;
 /// 219.99999999999997), which would show in the URL.
 double _snap(double value) => (value / _priceStep).round() * _priceStep;
 
-/// A value at the slider's bound means no limit on that end.
 double? _boundToNull(double value, double bound) =>
     value == bound ? null : value;
 

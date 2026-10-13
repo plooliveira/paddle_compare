@@ -9,7 +9,6 @@ import '../../widgets/compare_specs.dart';
 /// A spec across the comparison: its label, then one cell per column. Built
 /// row by row, so values line up even when one of them wraps.
 class CompareSpecRow extends StatelessWidget {
-  /// A value shown as text, like a weight or a shape.
   CompareSpecRow.text({
     super.key,
     required CompareSpec spec,
@@ -18,7 +17,6 @@ class CompareSpecRow extends StatelessWidget {
        _cell = ((paddle) =>
            _TextCell(paddle: paddle, value: spec.value(paddle)));
 
-  /// A rating out of [CompareSpecs.maxRating], with a bar.
   CompareSpecRow.rating({
     super.key,
     required CompareRating spec,
@@ -27,7 +25,6 @@ class CompareSpecRow extends StatelessWidget {
        _cell = ((paddle) =>
            _RatingCell(paddle: paddle, rating: spec.rating(paddle)));
 
-  /// Space between columns, shared with the row of paddles above.
   static const columnGap = 12.0;
 
   final String label;

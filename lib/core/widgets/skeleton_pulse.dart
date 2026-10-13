@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-/// Fades [child] in and out slowly, to show that it stands in for content
-/// still loading. Still when the platform asks for reduced motion.
 class SkeletonPulse extends StatefulWidget {
   const SkeletonPulse({super.key, required this.child});
 

@@ -8,10 +8,6 @@ import '../../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../../../compare/controller/compare_controller.dart';
 import '../../../../compare/controller/compare_limits.dart';
 
-/// The paddles being compared, at the foot of the catalog: a slot per paddle
-/// the comparison fits, each with a button to remove it. Tapping the tray
-/// opens the comparison.
-///
 /// Watching each paddle here is what loads it. The catalog stays mounted
 /// under a paddle's page, so a paddle added there starts loading while that
 /// page leaves.
@@ -25,7 +21,6 @@ class CompareTray extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    // Side by side, a phone fits two, like the comparison it opens.
     final ids = ref
         .watch(compareIdsProvider)
         .take(CompareLimits.mobile)
@@ -116,11 +111,9 @@ class _PaddleSlot extends ConsumerWidget {
   }
 }
 
-/// A thumbnail and up to two lines of text beside it.
 class _SlotLayout extends StatelessWidget {
   const _SlotLayout({required this.thumbnail, required this.body});
 
-  /// The illustrations' own ratio (600×800).
   static const _thumbnailAspectRatio = 3 / 4;
   static const _thumbnailWidth = 40.0;
 
@@ -211,7 +204,6 @@ class _SlotSkeleton extends StatelessWidget {
   }
 }
 
-/// An outlined thumbnail with [icon], and [text] beside it.
 class _SlotMessage extends StatelessWidget {
   const _SlotMessage({required this.icon, required this.text, this.iconColor});
 
@@ -250,7 +242,6 @@ class _SlotMessage extends StatelessWidget {
   }
 }
 
-/// Room for one more paddle, outlined like the comparison's empty column.
 class _EmptySlot extends StatelessWidget {
   const _EmptySlot();
 

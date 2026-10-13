@@ -4,7 +4,6 @@ import '../../../../../core/utils/price_format.dart';
 import '../../../../../core/widgets/paddle_image.dart';
 import '../../../../../data/repositories/paddle/paddle_repository.dart';
 
-/// The top of a paddle's column: illustration, brand, name and price.
 class CompareSlotHeader extends StatelessWidget {
   const CompareSlotHeader({super.key, required this.paddle});
 

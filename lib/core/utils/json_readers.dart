@@ -1,5 +1,3 @@
-// Tolerant readers for dirty JSON: anything unexpected becomes null.
-
 Map<String, Object?>? readMap(Object? value) =>
     value is Map<String, Object?> ? value : null;
 

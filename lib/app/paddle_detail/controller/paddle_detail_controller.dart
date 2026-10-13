@@ -13,7 +13,6 @@ String paddleDetailId(Ref ref) => throw UnimplementedError();
 
 Duration? _noRetry(int retryCount, Object error) => null;
 
-/// The paddle whose id is in the URL, or null when there is no such paddle.
 @Riverpod(retry: _noRetry, dependencies: [paddleDetailId])
 class PaddleDetailController extends _$PaddleDetailController {
   @override
@@ -26,6 +25,5 @@ class PaddleDetailController extends _$PaddleDetailController {
     };
   }
 
-  /// Loads the paddle again after a failure.
   void retry() => ref.invalidateSelf();
 }

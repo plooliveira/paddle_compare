@@ -2,15 +2,10 @@ import '../../../../core/utils/spec_format.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../../shared/paddle_labels.dart';
 
-/// A row of the comparison: its label and how a paddle shows it, or null
-/// when the paddle doesn't list it.
 typedef CompareSpec = ({String label, String? Function(Paddle) value});
 
-/// A rating row: its label and the paddle's rating, out of
-/// [CompareSpecs.maxRating].
 typedef CompareRating = ({String label, int? Function(Paddle) rating});
 
-/// The comparison's sections, in the same order as the detail page.
 abstract final class CompareSpecs {
   static const maxRating = 10;
 

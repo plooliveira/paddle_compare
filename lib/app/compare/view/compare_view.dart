@@ -10,7 +10,6 @@ import 'mobile/compare_mobile_page.dart';
 class CompareView extends StatefulWidget {
   const CompareView({super.key, required this.ids});
 
-  /// From the URL, already cleaned up by the route.
   final List<String> ids;
 
   @override
@@ -30,7 +29,6 @@ class _CompareViewState extends State<CompareView> {
   @override
   void didUpdateWidget(CompareView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Every route build makes a new list, so compare the ids, not the lists.
     if (listEquals(widget.ids, oldWidget.ids)) return;
     // Applied after this frame, like CatalogView: anything sharing the
     // container from outside this subtree must not be marked dirty while the

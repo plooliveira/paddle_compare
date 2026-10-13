@@ -2,8 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import 'paddle_card.dart';
 
-/// Placeholder with the shape of a [PaddleCard]. The pulse is applied by
-/// the parent, so all placeholders breathe together.
 class PaddleCardSkeleton extends StatelessWidget {
   const PaddleCardSkeleton({super.key});
 

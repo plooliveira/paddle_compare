@@ -13,14 +13,11 @@ import 'widgets/compare_slot_skeleton.dart';
 import 'widgets/compare_spec_row.dart';
 import 'widgets/empty_compare_slot.dart';
 
-/// The content of the comparison's bottom sheet.
 class CompareMobilePage extends ConsumerWidget {
   const CompareMobilePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Side by side, a phone fits two. Ids past that stay in the URL for wider
-    // layouts.
     final ids = ref
         .watch(compareIdsProvider)
         .take(CompareLimits.mobile)

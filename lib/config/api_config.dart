@@ -1,4 +1,3 @@
-/// For the fake API.
 class ApiConfig {
   const ApiConfig({
     this.minLatency = const Duration(milliseconds: 300),
@@ -11,6 +10,5 @@ class ApiConfig {
   /// Upper bound of the simulated latency. Treated as [minLatency] if lower.
   final Duration maxLatency;
 
-  /// Probability (0–1) that a request fails.
   final double failureRate;
 }

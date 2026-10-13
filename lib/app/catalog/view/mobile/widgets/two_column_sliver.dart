@@ -15,8 +15,6 @@ class TwoColumnSliver extends StatelessWidget {
 
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
-
-  /// Built lazily like the rows, only once it scrolls near the viewport.
   final Widget? footer;
 
   @override

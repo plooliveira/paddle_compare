@@ -2,8 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import 'compare_slot_skeleton.dart';
 
-/// A column with no paddle yet: the outline of one, and the way to pick it.
-/// The whole illustration block is the button, so it is easy to hit.
 class EmptyCompareSlot extends StatelessWidget {
   const EmptyCompareSlot({super.key, required this.onSelect});
 

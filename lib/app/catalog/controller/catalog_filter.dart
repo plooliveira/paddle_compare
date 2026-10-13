@@ -4,8 +4,6 @@ import '../../../data/repositories/paddle/paddle_repository.dart';
 
 part 'catalog_filter.freezed.dart';
 
-/// Search, filters and sort as the catalog UI and URL hold them.
-/// [toQuery] turns it into the repository's [PaddleQuery].
 @freezed
 abstract class CatalogFilter with _$CatalogFilter {
   const CatalogFilter._();

@@ -3,8 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../widgets/paddle_card_skeleton.dart';
 import 'two_column_sliver.dart';
 
-/// Skeleton grid with a slow, shared pulse. Still when the platform asks for
-/// reduced motion.
 class CatalogLoadingSliver extends StatefulWidget {
   const CatalogLoadingSliver({super.key});
 

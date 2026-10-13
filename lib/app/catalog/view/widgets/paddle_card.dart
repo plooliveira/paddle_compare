@@ -19,13 +19,7 @@ class PaddleCard extends StatelessWidget {
 
   final Paddle paddle;
   final VoidCallback onViewDetails;
-
-  /// Adds this paddle to the comparison. When null, the "Compare" button is
-  /// disabled.
   final VoidCallback? onCompare;
-
-  /// Whether this paddle is already in the comparison. Its button then says
-  /// so instead of offering "Compare".
   final bool isCompared;
 
   @override

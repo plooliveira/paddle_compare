@@ -16,8 +16,6 @@ class PaddleDetailView extends StatefulWidget {
   });
 
   final String id;
-
-  /// The paddles being compared in the catalog underneath, from the URL.
   final List<String> compareIds;
 
   @override

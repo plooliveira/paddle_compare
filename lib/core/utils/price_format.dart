@@ -1,4 +1,3 @@
-/// Formats [usd] as `$1,249.99`. Always two decimals, so prices line up.
 String formatUsd(double usd) {
   final fixed = usd.abs().toStringAsFixed(2);
   final dot = fixed.indexOf('.');

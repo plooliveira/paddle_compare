@@ -9,7 +9,6 @@ extension PaddleSortLabel on PaddleSort {
     PaddleSort.power => 'Power: High to Low',
   };
 
-  /// Fits the toolbar button.
   String get shortLabel => switch (this) {
     PaddleSort.featured => 'Sort',
     PaddleSort.priceLowToHigh => 'Lowest price',
@@ -18,7 +17,6 @@ extension PaddleSortLabel on PaddleSort {
   };
 }
 
-/// `$100 – $200`, `$100+`, `Up to $200`, or `Any price` when both are null.
 String priceRangeLabel(double? min, double? max) {
   String dollars(double value) => '\$${value.round()}';
   return switch ((min, max)) {

@@ -5,8 +5,6 @@ import 'package:material_ui/material_ui.dart';
 
 import 'app_colors.dart';
 
-/// Editorial look: Playfair Display for display and title text, Inter for
-/// everything else, ink on warm off-white, hairline borders, no shadows.
 abstract final class AppTheme {
   static const serif = 'PlayfairDisplay';
   static const sans = 'Inter';
@@ -276,7 +274,6 @@ abstract final class AppTheme {
         fontWeight: FontWeight.w500,
         letterSpacing: 0.3,
       ),
-      // Overlines: brand names, section labels.
       labelSmall: sansStyle.copyWith(
         fontSize: 11,
         fontWeight: FontWeight.w500,
@@ -287,7 +284,6 @@ abstract final class AppTheme {
   }
 }
 
-/// A short cross-fade, like a page load in the browser.
 class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
   const _FadePageTransitionsBuilder();
 

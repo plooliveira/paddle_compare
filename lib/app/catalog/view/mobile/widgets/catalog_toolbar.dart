@@ -8,7 +8,6 @@ import '../../../controller/catalog_controller.dart';
 import '../../../state/catalog_state.dart';
 import '../../widgets/catalog_labels.dart';
 
-/// Result count, plus the buttons that open the filter and sort sheets.
 class CatalogToolbar extends ConsumerWidget {
   const CatalogToolbar({
     super.key,
@@ -28,8 +27,6 @@ class CatalogToolbar extends ConsumerWidget {
       ),
     );
 
-    // Wraps the buttons below the count, and shortens the sort label, when
-    // large text or a long label doesn't fit on one line.
     return Wrap(
       alignment: WrapAlignment.spaceBetween,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -65,7 +62,6 @@ class CatalogToolbar extends ConsumerWidget {
 String _countLabel(AsyncValue<CatalogState> state) => switch (state) {
   AsyncValue(isLoading: true) => 'Loading…',
   AsyncValue(hasError: true) => '',
-  // Only the loaded pages are counted.
   AsyncValue(:final value?) when value.hasMore =>
     '${value.paddles.length}+ paddles',
   AsyncValue(:final value?) => paddleCountLabel(value.paddles.length),

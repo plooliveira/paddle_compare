@@ -15,8 +15,6 @@ CatalogFilter catalogFilter(Ref ref) => throw UnimplementedError();
 
 Duration? _noRetry(int retryCount, Object error) => null;
 
-/// Loads, page by page, the paddles matching the filter in the URL. A new
-/// filter reloads from the first page.
 @Riverpod(retry: _noRetry, dependencies: [catalogFilter])
 class CatalogController extends _$CatalogController {
   static const pageSize = 12;
@@ -40,7 +38,6 @@ class CatalogController extends _$CatalogController {
     );
   }
 
-  /// Reloads from the first page after the initial load failed.
   void retry() => ref.invalidateSelf();
 
   Future<void> loadMore() async {

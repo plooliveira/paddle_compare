@@ -14,8 +14,6 @@ List<String> compareIds(Ref ref) => throw UnimplementedError();
 
 Duration? _noRetry(int retryCount, Object error) => null;
 
-/// One paddle of the comparison, or null when there is no such paddle.
-///
 /// One per id, so each column loads, fails and retries on its own, and a new
 /// id in the URL only loads that paddle. It takes no scoped dependencies, so
 /// the catalog's tray and the comparison sheet share it, and each id is
@@ -31,6 +29,5 @@ class ComparePaddleController extends _$ComparePaddleController {
     };
   }
 
-  /// Loads the paddle again after a failure.
   void retry() => ref.invalidateSelf();
 }

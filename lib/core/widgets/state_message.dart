@@ -2,8 +2,6 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
-/// Centered icon, title, message and optional action. Used for empty and
-/// error states.
 class StateMessage extends StatelessWidget {
   const StateMessage({
     super.key,
@@ -16,8 +14,6 @@ class StateMessage extends StatelessWidget {
   final IconData icon;
   final String title;
   final String message;
-
-  /// Usually a single button.
   final Widget? action;
 
   static const _maxWidth = 360.0;

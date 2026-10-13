@@ -1,7 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Paddle illustration, or a quiet placeholder when the path is missing or
-/// the asset fails to load.
 class PaddleImage extends StatelessWidget {
   const PaddleImage({super.key, required this.imagePath});
 
@@ -41,7 +39,6 @@ class PaddleImage extends StatelessWidget {
 class _MissingImage extends StatelessWidget {
   const _MissingImage();
 
-  /// Below this height, as in a thumbnail, only a smaller icon fits.
   static const _captionMinHeight = 64.0;
 
   @override

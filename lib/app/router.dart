@@ -18,10 +18,6 @@ GoRouter router(Ref ref) {
   return router;
 }
 
-/// The catalog, with its filter and the paddles being compared in the query:
-/// `/?q=apex&shape=hybrid&max-price=200&in-stock=true&sort=price-asc`, plus
-/// `&compare=a&compare=b`.
-///
 /// Parameters are kept as raw strings and parsed by [filter] and [compareIds],
 /// so a hand-edited URL never lands on the error page.
 ///
@@ -82,8 +78,6 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
   final String? sort;
   final List<String> compare;
 
-  /// Unknown values are ignored. Prices are clamped to the filter's bounds,
-  /// a bound means no limit, and a min above the max swaps them.
   CatalogFilter get filter {
     var min = _parsePrice(minPrice);
     var max = _parsePrice(maxPrice);
@@ -98,9 +92,6 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
     );
   }
 
-  /// The paddles being compared: [compare] trimmed, without blanks or
-  /// repeats, and at most [CompareLimits.max], so a hand-edited URL never
-  /// breaks the page.
   List<String> get compareIds => List.unmodifiable(
     {
       for (final id in compare)
@@ -108,7 +99,6 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
     }.take(CompareLimits.max),
   );
 
-  /// A copy with only [compare] changed.
   CatalogRoute withCompare(List<String> ids) => CatalogRoute(
     q: q,
     shape: shape,
@@ -124,7 +114,6 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
   void goInPlace(BuildContext context) =>
       Router.neglect(context, () => go(context));
 
-  /// Pushes a paddle's page over this catalog.
   Future<void> pushDetails(BuildContext context, String id) =>
       context.push(_nested(PaddleDetailRoute(id: id)));
 
@@ -134,7 +123,6 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
   void goCompare(BuildContext context) =>
       context.go(_nested(const CompareRoute()));
 
-  /// [child]'s location with this catalog's query.
   String _nested(GoRouteData child) {
     final path = Uri.parse(child.location);
     assert(!path.hasQuery, 'Pages under the catalog carry its query only.');
@@ -146,9 +134,6 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
       CatalogView(filter: filter, compareIds: compareIds);
 }
 
-/// A paddle's specs: `/paddles/apex?shape=hybrid`, with the query of the
-/// catalog underneath. Nested under the catalog, so a deep link has the
-/// catalog underneath to go back to. Opened with [CatalogRoute.pushDetails].
 class PaddleDetailRoute extends GoRouteData with $PaddleDetailRoute {
   const PaddleDetailRoute({required this.id});
 
@@ -161,12 +146,6 @@ class PaddleDetailRoute extends GoRouteData with $PaddleDetailRoute {
   );
 }
 
-/// The comparison, in a bottom sheet over the catalog:
-/// `/compare?shape=hybrid&compare=a&compare=b`. The paddles are the catalog's
-/// [CatalogRoute.compare], so closing the sheet leaves them in its tray.
-/// Opened with [CatalogRoute.goCompare].
-///
-/// The URL holds up to [CompareLimits.max] ids, whatever the layout shows.
 class CompareRoute extends GoRouteData with $CompareRoute {
   const CompareRoute();
 

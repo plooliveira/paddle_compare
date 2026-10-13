@@ -3,12 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../../core/widgets/skeleton_box.dart';
 import 'compare_slot_header.dart';
 
-/// Placeholder with the shape of a [CompareSlotHeader]. Still: the parent
-/// adds the pulse when it stands in for a paddle that is loading.
 class CompareSlotSkeleton extends StatelessWidget {
   const CompareSlotSkeleton({super.key, this.image});
 
-  /// Takes the place of the illustration's block.
   final Widget? image;
 
   @override

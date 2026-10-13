@@ -47,8 +47,6 @@ class FakePaddleApi implements PaddleApi {
   Future<Map<String, dynamic>?> fetchPaddle(String id) async =>
       (await _load()).fetchPaddle(id);
 
-  /// Waits like a network request, maybe fails like one, then loads the
-  /// asset as the server's catalog.
   Future<InMemoryPaddleApi> _load() async {
     await Future<void>.delayed(_nextLatency());
 

@@ -1,10 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
-/// A placeholder block with the size of the content it stands in for.
 class SkeletonBox extends StatelessWidget {
   const SkeletonBox({super.key, this.width, this.height});
 
-  /// Null fills the available space.
   final double? width;
   final double? height;
 

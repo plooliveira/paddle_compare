@@ -4,8 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../controller/catalog_controller.dart';
 
 /// Last item of the grid. Being built means it scrolled near the viewport,
-/// so it asks for the next page. Pages come filtered and sorted from the
-/// repository, so each one only adds results to the end of the grid.
+/// so it asks for the next page.
 class LoadMoreFooter extends ConsumerWidget {
   const LoadMoreFooter({super.key});
 
@@ -26,7 +25,6 @@ class LoadMoreFooter extends ConsumerWidget {
     );
     final theme = Theme.of(context);
 
-    // The empty state is shown by the page.
     if (status == null || (status.isEmpty && !status.hasMore)) {
       return const SizedBox.shrink();
     }

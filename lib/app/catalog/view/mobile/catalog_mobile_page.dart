@@ -62,7 +62,6 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
     });
   }
 
-  /// This catalog, as in its URL.
   CatalogRoute get _route => CatalogRoute.fromFilter(
     ref.read(catalogFilterProvider),
     compare: ref.read(compareIdsProvider),
@@ -70,9 +69,6 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
 
   void _openDetails(Paddle paddle) => _route.pushDetails(context, paddle.id);
 
-  /// Adds [paddle] to the comparison, like "Add to compare" on its page. If
-  /// that fills it, the comparison opens. Otherwise the paddle joins the
-  /// tray, without a history entry, like a filter change.
   void _addToCompare(Paddle paddle) {
     final next = _route.withCompare([
       ...ref.read(compareIdsProvider),
@@ -87,7 +83,6 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
 
   void _openComparison() => _route.goCompare(context);
 
-  /// Without a history entry, like a filter change.
   void _removeFromComparison(String id) => _route
       .withCompare([
         for (final other in ref.read(compareIdsProvider))
@@ -131,7 +126,6 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
     );
     final isRefreshing = status == _Status.refreshing;
     final compareIds = ref.watch(compareIdsProvider);
-    // Once the comparison is full, every card's "Compare" is disabled.
     final canCompare = compareIds.length < CompareLimits.mobile;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -201,7 +195,6 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
   }
 }
 
-/// Search and toolbar, pinned under the status bar while the grid scrolls.
 class _Controls extends StatelessWidget {
   const _Controls({
     required this.search,

@@ -16,11 +16,7 @@ class CatalogView extends StatefulWidget {
     required this.compareIds,
   });
 
-  /// From the URL. A new one reloads the catalog.
   final CatalogFilter filter;
-
-  /// The paddles in the compare tray, from the URL, already cleaned up by the
-  /// route.
   final List<String> compareIds;
 
   @override
@@ -28,8 +24,6 @@ class CatalogView extends StatefulWidget {
 }
 
 class _CatalogViewState extends State<CatalogView> {
-  /// Overrides [catalogFilterProvider] and [compareIdsProvider] for this
-  /// subtree, which scopes the catalog's controller to it too.
   late final _container = ProviderContainer(
     parent: ProviderScope.containerOf(context, listen: false),
     overrides: _overrides,
@@ -43,9 +37,6 @@ class _CatalogViewState extends State<CatalogView> {
   @override
   void didUpdateWidget(CatalogView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Every route build makes a new list, so compare the ids, not the lists.
-    // A change in the comparison alone doesn't reload the grid: the
-    // controller only watches the filter's query.
     if (widget.filter == oldWidget.filter &&
         listEquals(widget.compareIds, oldWidget.compareIds)) {
       return;

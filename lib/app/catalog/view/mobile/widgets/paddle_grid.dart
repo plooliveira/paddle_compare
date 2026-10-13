@@ -16,12 +16,7 @@ class PaddleGrid extends ConsumerWidget {
   });
 
   final ValueChanged<Paddle> onViewDetails;
-
-  /// Adds a paddle to the comparison. Null when the comparison is full, which
-  /// disables every card's "Compare" button.
   final ValueChanged<Paddle>? onCompare;
-
-  /// Cards of these paddles show them as added, with "Compare" disabled.
   final List<String> compareIds;
 
   @override

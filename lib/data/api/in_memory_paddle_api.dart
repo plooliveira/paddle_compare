@@ -1,9 +1,6 @@
 import '../../core/utils/json_readers.dart';
 import 'paddle_api.dart';
 
-/// A [PaddleApi] that answers from raw paddle entries already in memory, the
-/// way a server would: no latency, no failures. `FakePaddleApi` hands every
-/// request to one once it has loaded the asset.
 class InMemoryPaddleApi implements PaddleApi {
   /// Keeps the entries of [items] that make a paddle, the first one per id,
   /// in source order. That order is the server's default.
@@ -29,8 +26,6 @@ class InMemoryPaddleApi implements PaddleApi {
     ];
 
     bool matches(_Entry entry) {
-      // Every term must appear, in any order, so "apex summit" finds the
-      // Apex Court Summit.
       if (!terms.every(entry.brandAndName.contains)) return false;
       if (shapes.isNotEmpty && !shapes.contains(entry.shape)) return false;
       if (minPrice != null || maxPrice != null) {
@@ -115,7 +110,6 @@ class _Entry {
     this.power,
   });
 
-  /// Null when [item] is not an object or lacks an id, brand or name.
   static _Entry? tryRead(Object? item) {
     if (item is! Map<String, dynamic>) return null;
     final id = readString(item['id']);
@@ -136,7 +130,6 @@ class _Entry {
     );
   }
 
-  /// The entry as stored, sent back as is.
   final Map<String, dynamic> json;
   final String id;
   final String brandAndName;
