@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../data/repositories/paddle/paddle_repository.dart';
+import '../../../../compare/controller/compare_controller.dart';
 import '../../../../router.dart';
 import '../../../controller/catalog_controller.dart';
 import '../../widgets/catalog_labels.dart';
@@ -60,6 +61,7 @@ class SortSheet extends ConsumerWidget {
                 onTap: () {
                   CatalogRoute.fromFilter(
                     ref.read(catalogFilterProvider).copyWith(sort: sort),
+                    compare: ref.read(compareIdsProvider),
                   ).goInPlace(context);
                   Navigator.of(context).pop();
                 },

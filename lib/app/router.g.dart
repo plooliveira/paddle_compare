@@ -36,6 +36,9 @@ mixin $CatalogRoute on GoRouteData {
     maxPrice: state.uri.queryParameters['max-price'],
     inStock: state.uri.queryParameters['in-stock'],
     sort: state.uri.queryParameters['sort'],
+    compare:
+        state.uri.queryParametersAll['compare']?.map((e) => e).toList() ??
+        const [],
   );
 
   CatalogRoute get _self => this as CatalogRoute;
@@ -51,6 +54,8 @@ mixin $CatalogRoute on GoRouteData {
       if (_self.maxPrice != null) 'max-price': _self.maxPrice,
       if (_self.inStock != null) 'in-stock': _self.inStock,
       if (_self.sort != null) 'sort': _self.sort,
+      if (!_$iterablesEqual(_self.compare, const []))
+        'compare': _self.compare.map((e) => e).toList(),
     },
   );
 
@@ -93,21 +98,10 @@ mixin $PaddleDetailRoute on GoRouteData {
 }
 
 mixin $CompareRoute on GoRouteData {
-  static CompareRoute _fromState(GoRouterState state) => CompareRoute(
-    ids:
-        state.uri.queryParametersAll['ids']?.map((e) => e).toList() ?? const [],
-  );
-
-  CompareRoute get _self => this as CompareRoute;
+  static CompareRoute _fromState(GoRouterState state) => const CompareRoute();
 
   @override
-  String get location => GoRouteData.$location(
-    '/compare',
-    queryParams: {
-      if (!_$iterablesEqual(_self.ids, const []))
-        'ids': _self.ids.map((e) => e).toList(),
-    },
-  );
+  String get location => GoRouteData.$location('/compare');
 
   @override
   void go(BuildContext context) => context.go(location);

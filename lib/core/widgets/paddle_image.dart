@@ -41,22 +41,34 @@ class PaddleImage extends StatelessWidget {
 class _MissingImage extends StatelessWidget {
   const _MissingImage();
 
+  /// Below this height, as in a thumbnail, only a smaller icon fits.
+  static const _captionMinHeight = 64.0;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = theme.colorScheme.onSurfaceVariant;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.sports_tennis_outlined, size: 32, color: color),
-          const SizedBox(height: 8),
-          Text(
-            'NO IMAGE',
-            semanticsLabel: 'No image',
-            style: theme.textTheme.labelSmall,
-          ),
-        ],
+    return LayoutBuilder(
+      builder: (context, constraints) => Center(
+        child: constraints.maxHeight < _captionMinHeight
+            ? Icon(
+                Icons.sports_tennis_outlined,
+                size: 20,
+                color: color,
+                semanticLabel: 'No image',
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.sports_tennis_outlined, size: 32, color: color),
+                  const SizedBox(height: 8),
+                  Text(
+                    'NO IMAGE',
+                    semanticsLabel: 'No image',
+                    style: theme.textTheme.labelSmall,
+                  ),
+                ],
+              ),
       ),
     );
   }

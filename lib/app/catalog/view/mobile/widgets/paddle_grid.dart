@@ -8,9 +8,21 @@ import 'load_more_footer.dart';
 import 'two_column_sliver.dart';
 
 class PaddleGrid extends ConsumerWidget {
-  const PaddleGrid({super.key, required this.onViewDetails});
+  const PaddleGrid({
+    super.key,
+    required this.onViewDetails,
+    this.onCompare,
+    this.compareIds = const [],
+  });
 
   final ValueChanged<Paddle> onViewDetails;
+
+  /// Adds a paddle to the comparison. Null when the comparison is full, which
+  /// disables every card's "Compare" button.
+  final ValueChanged<Paddle>? onCompare;
+
+  /// Cards of these paddles show them as added, with "Compare" disabled.
+  final List<String> compareIds;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,9 +35,15 @@ class PaddleGrid extends ConsumerWidget {
       itemCount: paddles.length,
       itemBuilder: (context, index) {
         final paddle = paddles[index];
+        final onCompare = this.onCompare;
+        final isCompared = compareIds.contains(paddle.id);
         return PaddleCard(
           paddle: paddle,
           onViewDetails: () => onViewDetails(paddle),
+          onCompare: onCompare != null && !isCompared
+              ? () => onCompare(paddle)
+              : null,
+          isCompared: isCompared,
         );
       },
       footer: const LoadMoreFooter(),

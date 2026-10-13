@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../compare/controller/compare_controller.dart';
 import '../../../../router.dart';
 import '../../../../shared/paddle_labels.dart';
 import '../../../controller/catalog_controller.dart';
@@ -15,8 +16,10 @@ class ActiveFiltersBar extends ConsumerWidget {
     final filter = ref.watch(catalogFilterProvider);
     if (filter.activeFilterCount == 0) return const SizedBox.shrink();
 
-    void apply(CatalogFilter filter) =>
-        CatalogRoute.fromFilter(filter).goInPlace(context);
+    void apply(CatalogFilter filter) => CatalogRoute.fromFilter(
+      filter,
+      compare: ref.read(compareIdsProvider),
+    ).goInPlace(context);
 
     Widget chip(String label, VoidCallback onDeleted) => Padding(
       padding: const EdgeInsets.only(right: 8),

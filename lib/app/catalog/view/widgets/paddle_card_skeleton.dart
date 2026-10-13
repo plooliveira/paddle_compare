@@ -38,6 +38,8 @@ class PaddleCardSkeleton extends StatelessWidget {
                 _Bar(width: 48, height: 12, color: block),
                 const SizedBox(height: 18),
                 _Bar(width: double.infinity, height: 44, color: block),
+                const SizedBox(height: 8),
+                _Bar(width: double.infinity, height: 44, color: block),
               ],
             ),
           ),

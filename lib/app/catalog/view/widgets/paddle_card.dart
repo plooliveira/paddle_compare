@@ -1,3 +1,4 @@
+import 'package:flutter/semantics.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/utils/price_format.dart';
@@ -9,6 +10,8 @@ class PaddleCard extends StatelessWidget {
     super.key,
     required this.paddle,
     required this.onViewDetails,
+    this.onCompare,
+    this.isCompared = false,
   });
 
   static const imageAspectRatio = 4 / 5;
@@ -17,6 +20,14 @@ class PaddleCard extends StatelessWidget {
   final Paddle paddle;
   final VoidCallback onViewDetails;
 
+  /// Adds this paddle to the comparison. When null, the "Compare" button is
+  /// disabled.
+  final VoidCallback? onCompare;
+
+  /// Whether this paddle is already in the comparison. Its button then says
+  /// so instead of offering "Compare".
+  final bool isCompared;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -24,78 +35,116 @@ class PaddleCard extends StatelessWidget {
     final textTheme = theme.textTheme;
     final price = paddle.priceUsd;
 
-    // Screen readers stop once per card: brand, name, price and the button.
+    final onCompare = this.onCompare;
+
+    // Screen readers stop once per card: brand, name, price and "View
+    // details". Adding to the comparison is a custom action.
     return MergeSemantics(
-      child: Material(
-        color: colors.surface,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: colors.outlineVariant),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onViewDetails,
-          // Screen readers get a single action: the button below.
-          excludeFromSemantics: true,
+      child: Semantics(
+        customSemanticsActions: onCompare != null
+            ? {_addToCompareAction: onCompare}
+            : null,
+        value: isCompared ? 'Added to compare' : null,
+        child: Material(
+          color: colors.surface,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: colors.outlineVariant),
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
+          ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AspectRatio(
-                aspectRatio: imageAspectRatio,
-                child: ColoredBox(
-                  color: colors.surfaceContainerHighest,
-                  child: Stack(
+              // Only the image and the text open the details: a tap on a
+              // disabled button, or around the buttons, does nothing.
+              Expanded(
+                child: InkWell(
+                  onTap: onViewDetails,
+                  // Screen readers get the "View details" button instead.
+                  excludeFromSemantics: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: PaddleImage(imagePath: paddle.imagePath),
+                      AspectRatio(
+                        aspectRatio: imageAspectRatio,
+                        child: ColoredBox(
+                          color: colors.surfaceContainerHighest,
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: PaddleImage(
+                                    imagePath: paddle.imagePath,
+                                  ),
+                                ),
+                              ),
+                              if (paddle.inStock == false)
+                                const Positioned(
+                                  top: 10,
+                                  left: 10,
+                                  child: _SoldOutTag(),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
-                      if (paddle.inStock == false)
-                        const Positioned(
-                          top: 10,
-                          left: 10,
-                          child: _SoldOutTag(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              paddle.brand.toUpperCase(),
+                              semanticsLabel: paddle.brand,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textTheme.labelSmall,
+                            ),
+                            const SizedBox(height: 6),
+                            _Name(paddle.name, style: textTheme.titleMedium!),
+                            const SizedBox(height: 10),
+                            Text(
+                              price != null
+                                  ? formatUsd(price)
+                                  : 'Price unavailable',
+                              style: price != null
+                                  ? textTheme.titleSmall?.copyWith(
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    )
+                                  : textTheme.bodySmall,
+                            ),
+                          ],
                         ),
+                      ),
                     ],
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      paddle.brand.toUpperCase(),
-                      semanticsLabel: paddle.brand,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.labelSmall,
+                    OutlinedButton(
+                      onPressed: onViewDetails,
+                      child: const Text('View details'),
                     ),
-                    const SizedBox(height: 6),
-                    _Name(paddle.name, style: textTheme.titleMedium!),
-                    const SizedBox(height: 10),
-                    Text(
-                      price != null ? formatUsd(price) : 'Price unavailable',
-                      style: price != null
-                          ? textTheme.titleSmall?.copyWith(
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            )
-                          : textTheme.bodySmall,
+                    const SizedBox(height: 8),
+                    // Reaches screen readers as the custom action above.
+                    ExcludeSemantics(
+                      child: OutlinedButton.icon(
+                        onPressed: onCompare,
+                        icon: Icon(
+                          isCompared ? Icons.check : Icons.compare_arrows,
+                          size: 18,
+                        ),
+                        label: Text(isCompared ? 'Added' : 'Compare'),
+                      ),
                     ),
                   ],
-                ),
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
-                child: OutlinedButton(
-                  onPressed: onViewDetails,
-                  child: const Text('View details'),
                 ),
               ),
             ],
@@ -105,6 +154,8 @@ class PaddleCard extends StatelessWidget {
     );
   }
 }
+
+const _addToCompareAction = CustomSemanticsAction(label: 'Add to compare');
 
 /// Always takes [PaddleCard.nameMaxLines] lines of height, so every card has
 /// the same height and prices line up across the grid.

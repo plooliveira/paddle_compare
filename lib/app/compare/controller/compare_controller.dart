@@ -6,8 +6,9 @@ import '../../../data/repositories/paddle/paddle_repository_provider.dart';
 
 part 'compare_controller.g.dart';
 
-/// The paddle ids in the compare URL, in order. CompareView overrides it for
-/// its subtree.
+/// The paddles being compared, in order: the `compare` parameter of the
+/// catalog's query. CatalogView, PaddleDetailView and CompareView override it
+/// for their subtrees, each with the ids in its own URL.
 @Riverpod(dependencies: [])
 List<String> compareIds(Ref ref) => throw UnimplementedError();
 
@@ -16,7 +17,9 @@ Duration? _noRetry(int retryCount, Object error) => null;
 /// One paddle of the comparison, or null when there is no such paddle.
 ///
 /// One per id, so each column loads, fails and retries on its own, and a new
-/// id in the URL only loads that paddle.
+/// id in the URL only loads that paddle. It takes no scoped dependencies, so
+/// the catalog's tray and the comparison sheet share it, and each id is
+/// requested once.
 @Riverpod(retry: _noRetry)
 class ComparePaddleController extends _$ComparePaddleController {
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../core/widgets/fading_back_button.dart';
 import '../../../../core/widgets/skeleton_pulse.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../controller/compare_controller.dart';
@@ -13,12 +13,9 @@ import 'widgets/compare_slot_skeleton.dart';
 import 'widgets/compare_spec_row.dart';
 import 'widgets/empty_compare_slot.dart';
 
+/// The content of the comparison's bottom sheet.
 class CompareMobilePage extends ConsumerWidget {
   const CompareMobilePage({super.key});
-
-  void _selectPaddle() {
-    // TODO: pick the paddle to compare with once the selection exists.
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +31,8 @@ class CompareMobilePage extends ConsumerWidget {
     ];
 
     Widget header(String? id, AsyncValue<Paddle?>? slot) => switch (slot) {
-      null => EmptyCompareSlot(onSelect: _selectPaddle),
+      // Closes the sheet, so the paddle is picked from the catalog.
+      null => EmptyCompareSlot(onSelect: () => context.pop()),
       AsyncValue(isLoading: true) => const SkeletonPulse(
         child: CompareSlotSkeleton(),
       ),
@@ -55,52 +53,80 @@ class CompareMobilePage extends ConsumerWidget {
       ),
     };
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: const FadingBackButton(),
-        title: const Text('Compare'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return SafeArea(
+      top: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+            child: Row(
               children: [
-                for (final (index, slot) in slots.indexed) ...[
-                  if (index > 0)
-                    const SizedBox(width: CompareSpecRow.columnGap),
-                  Expanded(child: header(ids.elementAtOrNull(index), slot)),
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      'Compare',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => context.pop(),
+                  tooltip: 'Close',
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final (index, slot) in slots.indexed) ...[
+                        if (index > 0)
+                          const SizedBox(width: CompareSpecRow.columnGap),
+                        Expanded(
+                          child: header(ids.elementAtOrNull(index), slot),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  _Section(
+                    title: 'Key specs',
+                    rows: [
+                      for (final spec in CompareSpecs.key)
+                        CompareSpecRow.text(spec: spec, slots: slots),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  _Section(
+                    title: 'Performance',
+                    rows: [
+                      for (final spec in CompareSpecs.performance)
+                        CompareSpecRow.rating(spec: spec, slots: slots),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  _Section(
+                    title: 'Full specifications',
+                    rows: [
+                      for (final spec in CompareSpecs.full)
+                        CompareSpecRow.text(spec: spec, slots: slots),
+                    ],
+                  ),
                 ],
-              ],
+              ),
             ),
-            const SizedBox(height: 32),
-            _Section(
-              title: 'Key specs',
-              rows: [
-                for (final spec in CompareSpecs.key)
-                  CompareSpecRow.text(spec: spec, slots: slots),
-              ],
-            ),
-            const SizedBox(height: 28),
-            _Section(
-              title: 'Performance',
-              rows: [
-                for (final spec in CompareSpecs.performance)
-                  CompareSpecRow.rating(spec: spec, slots: slots),
-              ],
-            ),
-            const SizedBox(height: 28),
-            _Section(
-              title: 'Full specifications',
-              rows: [
-                for (final spec in CompareSpecs.full)
-                  CompareSpecRow.text(spec: spec, slots: slots),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/widgets/fading_back_button.dart';
 import '../../../../core/widgets/state_message.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
+import '../../../compare/controller/compare_controller.dart';
+import '../../../compare/controller/compare_limits.dart';
 import '../../../router.dart';
 import '../../controller/paddle_detail_controller.dart';
 import '../widgets/full_specs_accordion.dart';
@@ -17,9 +19,39 @@ import 'widgets/compare_bar.dart';
 class PaddleDetailMobilePage extends ConsumerWidget {
   const PaddleDetailMobilePage({super.key});
 
+  /// Adds [paddle] to the comparison of the catalog underneath. If that fills
+  /// it, the comparison opens, like a card's "Compare" button. Otherwise the
+  /// catalog comes back, with the paddle in its tray: a `go` that keeps its
+  /// page and filter, so the grid doesn't reload.
+  void _addToCompare(BuildContext context, Paddle paddle) {
+    final catalog = CatalogRoute.of(context);
+    final next = catalog.withCompare([...catalog.compareIds, paddle.id]);
+    if (next.compareIds.length >= CompareLimits.mobile) {
+      next.goCompare(context);
+    } else {
+      next.go(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(paddleDetailControllerProvider);
+    final compareIds = ref.watch(compareIdsProvider);
+
+    CompareBar compareBarFor(Paddle paddle) {
+      if (compareIds.contains(paddle.id)) {
+        return const CompareBar(
+          onCompare: null,
+          label: 'Added to compare',
+          icon: Icons.check,
+        );
+      }
+      if (compareIds.length >= CompareLimits.mobile) {
+        return const CompareBar(onCompare: null, label: 'Compare is full');
+      }
+      return CompareBar(onCompare: () => _addToCompare(context, paddle));
+    }
+
     final (body, compareBar) = switch (detail) {
       AsyncValue(isLoading: true) => (
         const PaddleDetailSkeleton(),
@@ -43,9 +75,7 @@ class PaddleDetailMobilePage extends ConsumerWidget {
       ),
       AsyncValue(value: final paddle?) => (
         _Details(paddle: paddle),
-        CompareBar(
-          onCompare: () => CompareRoute(ids: [paddle.id]).push(context),
-        ),
+        compareBarFor(paddle),
       ),
       _ => (
         _Message(

@@ -1,9 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 
 class CompareBar extends StatelessWidget {
-  const CompareBar({super.key, required this.onCompare});
+  const CompareBar({
+    super.key,
+    required this.onCompare,
+    this.label = 'Add to compare',
+    this.icon = Icons.compare_arrows,
+  });
 
   final VoidCallback? onCompare;
+  final String label;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +30,8 @@ class CompareBar extends StatelessWidget {
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: onCompare,
-              icon: const Icon(Icons.compare_arrows, size: 20),
-              label: const Text('Add to compare'),
+              icon: Icon(icon, size: 20),
+              label: Text(label),
             ),
           ),
         ),

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 
 /// Centered icon, title, message and optional action. Used for empty and
@@ -18,12 +20,22 @@ class StateMessage extends StatelessWidget {
   /// Usually a single button.
   final Widget? action;
 
+  static const _maxWidth = 360.0;
+
+  /// Caps the width like a ConstrainedBox would, but also when measuring the
+  /// height, which a ConstrainedBox doesn't. SliverFillRemaining sizes the
+  /// message by that height, and text measured too wide wraps on fewer lines
+  /// than it will take.
+  static BoxConstraints _capWidth(BoxConstraints constraints) => constraints
+      .loosen()
+      .copyWith(maxWidth: math.min(constraints.maxWidth, _maxWidth));
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
+      child: ConstraintsTransformBox(
+        constraintsTransform: _capWidth,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
           child: Column(

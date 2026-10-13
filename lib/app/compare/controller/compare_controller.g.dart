@@ -8,20 +8,23 @@ part of 'compare_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The paddle ids in the compare URL, in order. CompareView overrides it for
-/// its subtree.
+/// The paddles being compared, in order: the `compare` parameter of the
+/// catalog's query. CatalogView, PaddleDetailView and CompareView override it
+/// for their subtrees, each with the ids in its own URL.
 
 @ProviderFor(compareIds)
 final compareIdsProvider = CompareIdsProvider._();
 
-/// The paddle ids in the compare URL, in order. CompareView overrides it for
-/// its subtree.
+/// The paddles being compared, in order: the `compare` parameter of the
+/// catalog's query. CatalogView, PaddleDetailView and CompareView override it
+/// for their subtrees, each with the ids in its own URL.
 
 final class CompareIdsProvider
     extends $FunctionalProvider<List<String>, List<String>, List<String>>
     with $Provider<List<String>> {
-  /// The paddle ids in the compare URL, in order. CompareView overrides it for
-  /// its subtree.
+  /// The paddles being compared, in order: the `compare` parameter of the
+  /// catalog's query. CatalogView, PaddleDetailView and CompareView override it
+  /// for their subtrees, each with the ids in its own URL.
   CompareIdsProvider._()
     : super(
         from: null,
@@ -60,7 +63,9 @@ String _$compareIdsHash() => r'cbcdb10dc0dfd8d826f51c022d0830b34a237ecd';
 /// One paddle of the comparison, or null when there is no such paddle.
 ///
 /// One per id, so each column loads, fails and retries on its own, and a new
-/// id in the URL only loads that paddle.
+/// id in the URL only loads that paddle. It takes no scoped dependencies, so
+/// the catalog's tray and the comparison sheet share it, and each id is
+/// requested once.
 
 @ProviderFor(ComparePaddleController)
 final comparePaddleControllerProvider = ComparePaddleControllerFamily._();
@@ -68,13 +73,17 @@ final comparePaddleControllerProvider = ComparePaddleControllerFamily._();
 /// One paddle of the comparison, or null when there is no such paddle.
 ///
 /// One per id, so each column loads, fails and retries on its own, and a new
-/// id in the URL only loads that paddle.
+/// id in the URL only loads that paddle. It takes no scoped dependencies, so
+/// the catalog's tray and the comparison sheet share it, and each id is
+/// requested once.
 final class ComparePaddleControllerProvider
     extends $AsyncNotifierProvider<ComparePaddleController, Paddle?> {
   /// One paddle of the comparison, or null when there is no such paddle.
   ///
   /// One per id, so each column loads, fails and retries on its own, and a new
-  /// id in the URL only loads that paddle.
+  /// id in the URL only loads that paddle. It takes no scoped dependencies, so
+  /// the catalog's tray and the comparison sheet share it, and each id is
+  /// requested once.
   ComparePaddleControllerProvider._({
     required ComparePaddleControllerFamily super.from,
     required String super.argument,
@@ -118,7 +127,9 @@ String _$comparePaddleControllerHash() =>
 /// One paddle of the comparison, or null when there is no such paddle.
 ///
 /// One per id, so each column loads, fails and retries on its own, and a new
-/// id in the URL only loads that paddle.
+/// id in the URL only loads that paddle. It takes no scoped dependencies, so
+/// the catalog's tray and the comparison sheet share it, and each id is
+/// requested once.
 
 final class ComparePaddleControllerFamily extends $Family
     with
@@ -141,7 +152,9 @@ final class ComparePaddleControllerFamily extends $Family
   /// One paddle of the comparison, or null when there is no such paddle.
   ///
   /// One per id, so each column loads, fails and retries on its own, and a new
-  /// id in the URL only loads that paddle.
+  /// id in the URL only loads that paddle. It takes no scoped dependencies, so
+  /// the catalog's tray and the comparison sheet share it, and each id is
+  /// requested once.
 
   ComparePaddleControllerProvider call(String id) =>
       ComparePaddleControllerProvider._(argument: id, from: this);
@@ -153,7 +166,9 @@ final class ComparePaddleControllerFamily extends $Family
 /// One paddle of the comparison, or null when there is no such paddle.
 ///
 /// One per id, so each column loads, fails and retries on its own, and a new
-/// id in the URL only loads that paddle.
+/// id in the URL only loads that paddle. It takes no scoped dependencies, so
+/// the catalog's tray and the comparison sheet share it, and each id is
+/// requested once.
 
 abstract class _$ComparePaddleController extends $AsyncNotifier<Paddle?> {
   late final _$args = ref.$arg as String;

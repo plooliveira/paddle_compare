@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/router.dart';
 import 'package:paddle_compare/core/theme/app_theme.dart';
 import 'package:paddle_compare/core/widgets/skeleton_pulse.dart';
@@ -43,7 +44,8 @@ const _sparse = Paddle(
 
 const _other = Paddle(id: 'other', brand: 'Brand', name: 'Other');
 
-Future<void> _pumpPage(
+/// Opens the sheet at `/compare?compare=…`, over the catalog and its tray.
+Future<GoRouter> _pumpPage(
   WidgetTester tester,
   FakePaddleRepository repository,
   List<String> ids,
@@ -53,7 +55,10 @@ Future<void> _pumpPage(
   addTearDown(tester.view.reset);
   final router = GoRouter(
     routes: $appRoutes,
-    initialLocation: CompareRoute(ids: ids).location,
+    initialLocation: Uri(
+      path: const CompareRoute().location,
+      queryParameters: {'compare': ids},
+    ).toString(),
   );
   addTearDown(router.dispose);
   await tester.pumpWidget(
@@ -63,9 +68,17 @@ Future<void> _pumpPage(
     ),
   );
   await tester.pump();
+  return router;
 }
 
-final _selectPaddle = find.text('Select paddle');
+/// Only in the sheet: the catalog and its tray underneath show the paddles
+/// too.
+Finder _inSheet(Finder finder) =>
+    find.descendant(of: find.byType(CompareView), matching: finder);
+
+Finder _text(String text) => _inSheet(find.text(text));
+
+final _selectPaddle = _text('Select paddle');
 
 void main() {
   testWidgets('shows the paddle on the left and an empty slot on the right', (
@@ -74,19 +87,19 @@ void main() {
     final repository = FakePaddleRepository([_full])..gate = Completer<void>();
     await _pumpPage(tester, repository, ['summit']);
 
-    expect(find.byType(SkeletonPulse), findsOneWidget);
+    expect(_inSheet(find.byType(SkeletonPulse)), findsOneWidget);
     expect(_selectPaddle, findsOneWidget);
-    expect(find.text('Compare'), findsOneWidget);
+    expect(_text('Compare'), findsOneWidget);
 
     repository.gate!.complete();
     await tester.pumpAndSettle();
 
-    expect(find.byType(SkeletonPulse), findsNothing);
-    expect(find.text('APEX COURT'), findsOneWidget);
-    expect(find.text('Summit Pro 16'), findsOneWidget);
-    expect(find.text('\$249.99'), findsOneWidget);
+    expect(_inSheet(find.byType(SkeletonPulse)), findsNothing);
+    expect(_text('APEX COURT'), findsOneWidget);
+    expect(_text('Summit Pro 16'), findsOneWidget);
+    expect(_text('\$249.99'), findsOneWidget);
     expect(
-      tester.getTopLeft(find.text('Summit Pro 16')).dx,
+      tester.getTopLeft(_text('Summit Pro 16')).dx,
       lessThan(tester.getTopLeft(_selectPaddle).dx),
     );
   });
@@ -108,7 +121,7 @@ void main() {
       '6.4',
       '2025',
     ]) {
-      expect(find.text(value), findsOneWidget, reason: value);
+      expect(_text(value), findsOneWidget, reason: value);
     }
 
     for (final (rating, value) in [
@@ -117,10 +130,10 @@ void main() {
       ('9', '9 out of 10'),
       ('6', '6 out of 10'),
     ]) {
-      await tester.ensureVisible(find.text(rating));
+      await tester.ensureVisible(_text(rating));
       await tester.pump();
       expect(
-        tester.getSemantics(find.text(rating)),
+        tester.getSemantics(_text(rating)),
         matchesSemantics(label: 'Summit Pro 16', value: value),
       );
     }
@@ -130,11 +143,11 @@ void main() {
     await _pumpPage(tester, FakePaddleRepository([_sparse]), ['sparse']);
     await tester.pumpAndSettle();
 
-    expect(find.text('Price unavailable'), findsOneWidget);
+    expect(_text('Price unavailable'), findsOneWidget);
     // Four key specs, three ratings and seven in the full specifications.
-    expect(find.text('—'), findsNWidgets(14));
+    expect(_text('—'), findsNWidgets(14));
     expect(
-      tester.getSemantics(find.text('—').first),
+      tester.getSemantics(_text('—').first),
       matchesSemantics(label: 'Sparse', value: 'Not listed'),
     );
   });
@@ -143,7 +156,7 @@ void main() {
     await _pumpPage(tester, FakePaddleRepository([_full]), ['nope']);
     await tester.pumpAndSettle();
 
-    expect(find.text('Paddle not found'), findsOneWidget);
+    expect(_text('Paddle not found'), findsOneWidget);
     expect(_selectPaddle, findsOneWidget);
   });
 
@@ -153,14 +166,14 @@ void main() {
     await _pumpPage(tester, repository, ['summit']);
     await tester.pumpAndSettle();
 
-    expect(find.text("Couldn't load this paddle"), findsOneWidget);
+    expect(_text("Couldn't load this paddle"), findsOneWidget);
 
     repository.error = null;
-    await tester.tap(find.text('Try again'));
+    await tester.tap(_text('Try again'));
     await tester.pumpAndSettle();
 
-    expect(find.text("Couldn't load this paddle"), findsNothing);
-    expect(find.text('Summit Pro 16'), findsOneWidget);
+    expect(_text("Couldn't load this paddle"), findsNothing);
+    expect(_text('Summit Pro 16'), findsOneWidget);
     expect(repository.ids, ['summit', 'summit']);
   });
 
@@ -173,12 +186,12 @@ void main() {
     ]);
     await tester.pumpAndSettle();
 
-    expect(find.text('Summit Pro 16'), findsOneWidget);
-    expect(find.text('Sparse'), findsOneWidget);
+    expect(_text('Summit Pro 16'), findsOneWidget);
+    expect(_text('Sparse'), findsOneWidget);
     expect(_selectPaddle, findsNothing);
     expect(
-      tester.getTopLeft(find.text('Summit Pro 16')).dx,
-      lessThan(tester.getTopLeft(find.text('Sparse')).dx),
+      tester.getTopLeft(_text('Summit Pro 16')).dx,
+      lessThan(tester.getTopLeft(_text('Sparse')).dx),
     );
   });
 
@@ -187,9 +200,27 @@ void main() {
     await _pumpPage(tester, repository, ['summit', 'sparse', 'other']);
     await tester.pumpAndSettle();
 
-    expect(find.text('Summit Pro 16'), findsOneWidget);
-    expect(find.text('Sparse'), findsOneWidget);
-    expect(find.text('Other'), findsNothing);
+    expect(_text('Summit Pro 16'), findsOneWidget);
+    expect(_text('Sparse'), findsOneWidget);
+    expect(_text('Other'), findsNothing);
     expect(repository.ids, ['summit', 'sparse']);
+  });
+
+  testWidgets('select paddle closes the sheet, to pick one in the catalog', (
+    tester,
+  ) async {
+    final router = await _pumpPage(tester, FakePaddleRepository([_full]), [
+      'summit',
+    ]);
+    await tester.pumpAndSettle();
+
+    await tester.tap(_selectPaddle);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompareView), findsNothing);
+    expect(
+      router.routerDelegate.currentConfiguration.uri.toString(),
+      '/?compare=summit',
+    );
   });
 }

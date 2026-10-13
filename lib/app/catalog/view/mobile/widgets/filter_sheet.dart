@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../data/repositories/paddle/paddle_repository.dart';
+import '../../../../compare/controller/compare_controller.dart';
 import '../../../../router.dart';
 import '../../../../shared/paddle_labels.dart';
 import '../../../controller/catalog_controller.dart';
@@ -37,8 +38,10 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
   RangeValues? _draggingPrice;
 
   void _apply(CatalogFilter Function(CatalogFilter filter) update) =>
-      CatalogRoute.fromFilter(update(ref.read(catalogFilterProvider)))
-          .goInPlace(context);
+      CatalogRoute.fromFilter(
+        update(ref.read(catalogFilterProvider)),
+        compare: ref.read(compareIdsProvider),
+      ).goInPlace(context);
 
   @override
   Widget build(BuildContext context) {

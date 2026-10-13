@@ -18,11 +18,17 @@ GoRouter router(Ref ref) {
   return router;
 }
 
-/// The catalog, with its filter in the query:
-/// `/?q=apex&shape=hybrid&max-price=200&in-stock=true&sort=price-asc`.
+/// The catalog, with its filter and the paddles being compared in the query:
+/// `/?q=apex&shape=hybrid&max-price=200&in-stock=true&sort=price-asc`, plus
+/// `&compare=a&compare=b`.
 ///
-/// Parameters are kept as raw strings and parsed by [filter], so a hand-edited
-/// URL never lands on the error page.
+/// Parameters are kept as raw strings and parsed by [filter] and [compareIds],
+/// so a hand-edited URL never lands on the error page.
+///
+/// Pages nested under the catalog carry its query in their own URL, so the
+/// catalog underneath is rebuilt the same on a refresh or a shared link. They
+/// are opened through [pushDetails] and [goCompare], never the generated
+/// `push` of the child routes.
 @TypedGoRoute<CatalogRoute>(
   path: '/',
   routes: [
@@ -38,10 +44,17 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
     this.maxPrice,
     this.inStock,
     this.sort,
+    this.compare = const [],
   });
 
   /// Leaves out every default, so the default filter is `/`.
-  factory CatalogRoute.fromFilter(CatalogFilter filter) => CatalogRoute(
+  ///
+  /// [compare] is required, so a filter change never drops the comparison by
+  /// accident.
+  factory CatalogRoute.fromFilter(
+    CatalogFilter filter, {
+    required List<String> compare,
+  }) => CatalogRoute(
     q: filter.query.isEmpty ? null : filter.query,
     // In enum order, so the same filter always gives the same URL.
     shape: [
@@ -52,7 +65,14 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
     maxPrice: _formatPrice(filter.maxPrice),
     inStock: filter.inStockOnly ? 'true' : null,
     sort: _sortParams[filter.sort],
+    compare: compare,
   );
+
+  /// The catalog underneath the page of [context], read from that page's URL.
+  ///
+  /// Only works in go_router's pages, not in sheets pushed imperatively.
+  factory CatalogRoute.of(BuildContext context) =>
+      $CatalogRoute._fromState(GoRouterState.of(context));
 
   final String? q;
   final List<String> shape;
@@ -60,6 +80,7 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
   final String? maxPrice;
   final String? inStock;
   final String? sort;
+  final List<String> compare;
 
   /// Unknown values are ignored. Prices are clamped to the filter's bounds,
   /// a bound means no limit, and a min above the max swaps them.
@@ -77,49 +98,113 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
     );
   }
 
+  /// The paddles being compared: [compare] trimmed, without blanks or
+  /// repeats, and at most [CompareLimits.max], so a hand-edited URL never
+  /// breaks the page.
+  List<String> get compareIds => List.unmodifiable(
+    {
+      for (final id in compare)
+        if (id.trim() case final id when id.isNotEmpty) id,
+    }.take(CompareLimits.max),
+  );
+
+  /// A copy with only [compare] changed.
+  CatalogRoute withCompare(List<String> ids) => CatalogRoute(
+    q: q,
+    shape: shape,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    inStock: inStock,
+    sort: sort,
+    compare: ids,
+  );
+
   /// Updates the URL without a history entry, so Back leaves the catalog
   /// instead of undoing filters one by one.
   void goInPlace(BuildContext context) =>
       Router.neglect(context, () => go(context));
 
+  /// Pushes a paddle's page over this catalog.
+  Future<void> pushDetails(BuildContext context, String id) =>
+      context.push(_nested(PaddleDetailRoute(id: id)));
+
+  /// Opens the comparison over this catalog. A single `go` updates the
+  /// catalog underneath and opens the sheet: pushing after [goInPlace] would
+  /// race, since the push starts from the configuration before it.
+  void goCompare(BuildContext context) =>
+      context.go(_nested(const CompareRoute()));
+
+  /// [child]'s location with this catalog's query.
+  String _nested(GoRouteData child) {
+    final path = Uri.parse(child.location);
+    assert(!path.hasQuery, 'Pages under the catalog carry its query only.');
+    return Uri.parse(location).replace(path: path.path).toString();
+  }
+
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      CatalogView(filter: filter);
+      CatalogView(filter: filter, compareIds: compareIds);
 }
 
-/// A paddle's specs. Nested under the catalog, so a deep link has the catalog
-/// underneath to go back to.
+/// A paddle's specs: `/paddles/apex?shape=hybrid`, with the query of the
+/// catalog underneath. Nested under the catalog, so a deep link has the
+/// catalog underneath to go back to. Opened with [CatalogRoute.pushDetails].
 class PaddleDetailRoute extends GoRouteData with $PaddleDetailRoute {
   const PaddleDetailRoute({required this.id});
 
   final String id;
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      PaddleDetailView(id: id);
+  Widget build(BuildContext context, GoRouterState state) => PaddleDetailView(
+    id: id,
+    compareIds: $CatalogRoute._fromState(state).compareIds,
+  );
 }
 
-/// Paddles side by side: `/compare?ids=a&ids=b`. Nested under the catalog,
-/// so a shared link has the catalog underneath to go back to.
+/// The comparison, in a bottom sheet over the catalog:
+/// `/compare?shape=hybrid&compare=a&compare=b`. The paddles are the catalog's
+/// [CatalogRoute.compare], so closing the sheet leaves them in its tray.
+/// Opened with [CatalogRoute.goCompare].
 ///
 /// The URL holds up to [CompareLimits.max] ids, whatever the layout shows.
 class CompareRoute extends GoRouteData with $CompareRoute {
-  const CompareRoute({this.ids = const []});
-
-  final List<String> ids;
-
-  /// [ids] trimmed, without blanks or repeats, and at most
-  /// [CompareLimits.max], so a hand-edited URL never breaks the page.
-  List<String> get paddleIds => List.unmodifiable(
-    {
-      for (final id in ids)
-        if (id.trim() case final id when id.isNotEmpty) id,
-    }.take(CompareLimits.max),
-  );
+  const CompareRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      CompareView(ids: paddleIds);
+  Page<void> buildPage(BuildContext context, GoRouterState state) => _SheetPage(
+    key: state.pageKey,
+    child: CompareView(ids: $CatalogRoute._fromState(state).compareIds),
+  );
+}
+
+/// A page shown as a modal bottom sheet. Being a page, it is in the URL: a
+/// refresh opens it again, and closing it (drag, barrier, Back) pops the
+/// route.
+class _SheetPage<T> extends Page<T> {
+  const _SheetPage({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    final localizations = MaterialLocalizations.of(context);
+    late final ModalBottomSheetRoute<T> route;
+    route = ModalBottomSheetRoute<T>(
+      settings: this,
+      // Reads the current page, like MaterialPage does, so a new URL updates
+      // the open sheet.
+      builder: (_) => (route.settings as _SheetPage<T>).child,
+      isScrollControlled: true,
+      useSafeArea: true,
+      // What showModalBottomSheet would pass.
+      barrierLabel: localizations.scrimLabel,
+      barrierOnTapHint: localizations.scrimOnTapHint(
+        localizations.bottomSheetLabel,
+      ),
+      modalBarrierColor: Theme.of(context).bottomSheetTheme.modalBarrierColor,
+    );
+    return route;
+  }
 }
 
 /// Featured is the default, so it has no parameter.

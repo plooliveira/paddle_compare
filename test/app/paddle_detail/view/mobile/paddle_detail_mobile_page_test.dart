@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:paddle_compare/app/catalog/view/mobile/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/widgets/paddle_detail_skeleton.dart';
@@ -67,10 +68,22 @@ Future<GoRouter> _pumpPage(
 
 Uri _url(GoRouter router) => router.routerDelegate.currentConfiguration.uri;
 
-final _compareButton = find.ancestor(
-  of: find.text('Add to compare'),
+/// What the browser shows, pushed pages included.
+String _browserUrl(GoRouter router) =>
+    router.routeInformationProvider.value.uri.toString();
+
+/// As in main.dart, so the URL shows the pushed page.
+void _reflectImperativeUrls() {
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+  addTearDown(() => GoRouter.optionURLReflectsImperativeAPIs = false);
+}
+
+Finder _barButton(String label) => find.ancestor(
+  of: find.text(label),
   matching: find.bySubtype<ButtonStyleButton>(),
 );
+
+final _compareButton = _barButton('Add to compare');
 
 bool _compareEnabled(WidgetTester tester) =>
     tester.widget<ButtonStyleButton>(_compareButton).enabled;
@@ -100,33 +113,130 @@ void main() {
     expect(_compareEnabled(tester), isTrue);
   });
 
-  testWidgets('add to compare opens the comparison with this paddle', (
+  testWidgets('add to compare goes back to the catalog, into its tray', (
     tester,
   ) async {
-    // As in main.dart, so the URL shows the pushed page.
-    GoRouter.optionURLReflectsImperativeAPIs = true;
-    addTearDown(() => GoRouter.optionURLReflectsImperativeAPIs = false);
+    _reflectImperativeUrls();
+    final repository = FakePaddleRepository([_full]);
+    final router = await _pumpPage(tester, repository, location: '/');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('View details'));
+    await tester.pumpAndSettle();
+
+    expect(_browserUrl(router), '/paddles/summit');
+    expect(repository.ids, ['summit']);
+
+    await tester.tap(_compareButton);
+    await tester.pumpAndSettle();
+
+    expect(_browserUrl(router), '/?compare=summit');
+    expect(find.byType(PaddleDetailView), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(CompareTray),
+        matching: find.text('Summit Pro 16'),
+      ),
+      findsOneWidget,
+    );
+    // The tray's own request for the paddle.
+    expect(repository.ids, ['summit', 'summit']);
+  });
+
+  testWidgets('the catalog underneath keeps its filter and its results', (
+    tester,
+  ) async {
+    _reflectImperativeUrls();
+    final repository = FakePaddleRepository([_full]);
+    final router = await _pumpPage(
+      tester,
+      repository,
+      location: '/?sort=price-asc',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('View details'));
+    await tester.pumpAndSettle();
+
+    expect(_browserUrl(router), '/paddles/summit?sort=price-asc');
+    final queries = repository.queries.length;
+
+    await tester.tap(_compareButton);
+    await tester.pumpAndSettle();
+
+    expect(_browserUrl(router), '/?sort=price-asc&compare=summit');
+    expect(find.text('Lowest price'), findsOneWidget);
+    expect(repository.queries, hasLength(queries));
+  });
+
+  testWidgets('from a shared link, add to compare goes to the catalog', (
+    tester,
+  ) async {
     final router = await _pumpPage(tester, FakePaddleRepository([_full]));
     await tester.pumpAndSettle();
 
     await tester.tap(_compareButton);
     await tester.pumpAndSettle();
 
-    // What the browser shows.
-    expect(
-      router.routeInformationProvider.value.uri.toString(),
-      '/compare?ids=summit',
-    );
-    expect(tester.widget<CompareView>(find.byType(CompareView)).ids, [
-      'summit',
-    ]);
+    expect(_url(router).toString(), '/?compare=summit');
+    expect(find.byType(PaddleDetailView), findsNothing);
+    expect(find.byType(CompareTray), findsOneWidget);
+  });
 
-    await tester.tap(find.byType(BackButton));
+  testWidgets('says when the paddle is already in the comparison', (
+    tester,
+  ) async {
+    await _pumpPage(
+      tester,
+      FakePaddleRepository([_full]),
+      location: '/paddles/summit?compare=summit',
+    );
     await tester.pumpAndSettle();
 
-    expect(find.byType(CompareView), findsNothing);
-    expect(find.byType(PaddleDetailView), findsOneWidget);
-    expect(router.routeInformationProvider.value.uri.path, '/paddles/summit');
+    expect(find.text('Add to compare'), findsNothing);
+    expect(
+      tester.widget<ButtonStyleButton>(_barButton('Added to compare')).enabled,
+      isFalse,
+    );
+    expect(
+      find.descendant(
+        of: _barButton('Added to compare'),
+        matching: find.byIcon(Icons.check),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('says when the comparison is full', (tester) async {
+    await _pumpPage(
+      tester,
+      FakePaddleRepository([_full]),
+      location: '/paddles/summit?compare=a&compare=b',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add to compare'), findsNothing);
+    expect(
+      tester.widget<ButtonStyleButton>(_barButton('Compare is full')).enabled,
+      isFalse,
+    );
+  });
+
+  testWidgets('completing the comparison opens it', (tester) async {
+    final router = await _pumpPage(
+      tester,
+      FakePaddleRepository([_full]),
+      location: '/paddles/summit?compare=other',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(_compareButton);
+    await tester.pumpAndSettle();
+
+    expect(_url(router).toString(), '/compare?compare=other&compare=summit');
+    expect(find.byType(PaddleDetailView), findsNothing);
+    expect(tester.widget<CompareView>(find.byType(CompareView)).ids, [
+      'other',
+      'summit',
+    ]);
   });
 
   testWidgets('highlights the key specs and the ratings', (tester) async {

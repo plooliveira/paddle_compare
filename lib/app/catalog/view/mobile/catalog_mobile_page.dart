@@ -6,6 +6,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/widgets/state_message.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
+import '../../../compare/controller/compare_controller.dart';
+import '../../../compare/controller/compare_limits.dart';
 import '../../../router.dart';
 import '../../controller/catalog_controller.dart';
 import 'widgets/active_filters_bar.dart';
@@ -13,6 +15,7 @@ import 'widgets/catalog_header.dart';
 import 'widgets/catalog_loading_sliver.dart';
 import 'widgets/catalog_search_field.dart';
 import 'widgets/catalog_toolbar.dart';
+import 'widgets/compare_tray.dart';
 import 'widgets/filter_sheet.dart';
 import 'widgets/paddle_grid.dart';
 import 'widgets/sort_sheet.dart';
@@ -52,12 +55,45 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
       final filter = ref.read(catalogFilterProvider);
       if (text == filter.query) return;
       _sentQuery = text;
-      CatalogRoute.fromFilter(filter.copyWith(query: text)).goInPlace(context);
+      CatalogRoute.fromFilter(
+        filter.copyWith(query: text),
+        compare: ref.read(compareIdsProvider),
+      ).goInPlace(context);
     });
   }
 
-  void _openDetails(Paddle paddle) =>
-      PaddleDetailRoute(id: paddle.id).push(context);
+  /// This catalog, as in its URL.
+  CatalogRoute get _route => CatalogRoute.fromFilter(
+    ref.read(catalogFilterProvider),
+    compare: ref.read(compareIdsProvider),
+  );
+
+  void _openDetails(Paddle paddle) => _route.pushDetails(context, paddle.id);
+
+  /// Adds [paddle] to the comparison, like "Add to compare" on its page. If
+  /// that fills it, the comparison opens. Otherwise the paddle joins the
+  /// tray, without a history entry, like a filter change.
+  void _addToCompare(Paddle paddle) {
+    final next = _route.withCompare([
+      ...ref.read(compareIdsProvider),
+      paddle.id,
+    ]);
+    if (next.compareIds.length >= CompareLimits.mobile) {
+      next.goCompare(context);
+    } else {
+      next.goInPlace(context);
+    }
+  }
+
+  void _openComparison() => _route.goCompare(context);
+
+  /// Without a history entry, like a filter change.
+  void _removeFromComparison(String id) => _route
+      .withCompare([
+        for (final other in ref.read(compareIdsProvider))
+          if (other != id) other,
+      ])
+      .goInPlace(context);
 
   @override
   Widget build(BuildContext context) {
@@ -94,10 +130,21 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
       ),
     );
     final isRefreshing = status == _Status.refreshing;
+    final compareIds = ref.watch(compareIdsProvider);
+    // Once the comparison is full, every card's "Compare" is disabled.
+    final canCompare = compareIds.length < CompareLimits.mobile;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
+        // Null rather than empty: a bar of any height, even zero, takes the
+        // bottom padding away from the grid.
+        bottomNavigationBar: compareIds.isEmpty
+            ? null
+            : CompareTray(
+                onOpen: _openComparison,
+                onRemove: _removeFromComparison,
+              ),
         body: SafeArea(
           bottom: false,
           child: CustomScrollView(
@@ -135,7 +182,11 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
                   opacity: isRefreshing ? 0.4 : 1,
                   sliver: SliverIgnorePointer(
                     ignoring: isRefreshing,
-                    sliver: _Results(onViewDetails: _openDetails),
+                    sliver: _Results(
+                      onViewDetails: _openDetails,
+                      onCompare: canCompare ? _addToCompare : null,
+                      compareIds: compareIds,
+                    ),
                   ),
                 ),
               },
@@ -201,9 +252,15 @@ class _Controls extends StatelessWidget {
 }
 
 class _Results extends ConsumerWidget {
-  const _Results({required this.onViewDetails});
+  const _Results({
+    required this.onViewDetails,
+    required this.onCompare,
+    required this.compareIds,
+  });
 
   final ValueChanged<Paddle> onViewDetails;
+  final ValueChanged<Paddle>? onCompare;
+  final List<String> compareIds;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -212,7 +269,13 @@ class _Results extends ConsumerWidget {
         (state) => state.value?.paddles.isEmpty ?? false,
       ),
     );
-    if (!isEmpty) return PaddleGrid(onViewDetails: onViewDetails);
+    if (!isEmpty) {
+      return PaddleGrid(
+        onViewDetails: onViewDetails,
+        onCompare: onCompare,
+        compareIds: compareIds,
+      );
+    }
 
     return SliverFillRemaining(
       hasScrollBody: false,
@@ -221,9 +284,10 @@ class _Results extends ConsumerWidget {
         title: 'No paddles found',
         message: 'Try a different search or adjust your filters.',
         action: OutlinedButton(
-          onPressed: () =>
-              CatalogRoute.fromFilter(ref.read(catalogFilterProvider).cleared())
-                  .goInPlace(context),
+          onPressed: () => CatalogRoute.fromFilter(
+            ref.read(catalogFilterProvider).cleared(),
+            compare: ref.read(compareIdsProvider),
+          ).goInPlace(context),
           child: const Text('Clear filters'),
         ),
       ),
