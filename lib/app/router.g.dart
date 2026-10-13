@@ -12,6 +12,13 @@ RouteBase get $catalogRoute => GoRouteData.$route(
   path: '/',
   hasOverriddenOnExit: false,
   factory: $CatalogRoute._fromState,
+  routes: [
+    GoRouteData.$route(
+      path: 'paddles/:id',
+      hasOverriddenOnExit: false,
+      factory: $PaddleDetailRoute._fromState,
+    ),
+  ],
 );
 
 mixin $CatalogRoute on GoRouteData {
@@ -41,6 +48,30 @@ mixin $CatalogRoute on GoRouteData {
       if (_self.sort != null) 'sort': _self.sort,
     },
   );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $PaddleDetailRoute on GoRouteData {
+  static PaddleDetailRoute _fromState(GoRouterState state) =>
+      PaddleDetailRoute(id: state.pathParameters['id']!);
+
+  PaddleDetailRoute get _self => this as PaddleDetailRoute;
+
+  @override
+  String get location =>
+      GoRouteData.$location('/paddles/${Uri.encodeComponent(_self.id)}');
 
   @override
   void go(BuildContext context) => context.go(location);

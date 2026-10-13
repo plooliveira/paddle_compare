@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/repositories/paddle/paddle_repository.dart';
 import 'catalog/controller/catalog_filter.dart';
 import 'catalog/view/catalog_view.dart';
+import 'paddle_detail/view/paddle_detail_view.dart';
 
 part 'router.g.dart';
 
@@ -20,7 +21,10 @@ GoRouter router(Ref ref) {
 ///
 /// Parameters are kept as raw strings and parsed by [filter], so a hand-edited
 /// URL never lands on the error page.
-@TypedGoRoute<CatalogRoute>(path: '/')
+@TypedGoRoute<CatalogRoute>(
+  path: '/',
+  routes: [TypedGoRoute<PaddleDetailRoute>(path: 'paddles/:id')],
+)
 class CatalogRoute extends GoRouteData with $CatalogRoute {
   const CatalogRoute({
     this.q,
@@ -76,6 +80,18 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       CatalogView(filter: filter);
+}
+
+/// A paddle's specs. Nested under the catalog, so a deep link has the catalog
+/// underneath to go back to.
+class PaddleDetailRoute extends GoRouteData with $PaddleDetailRoute {
+  const PaddleDetailRoute({required this.id});
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      PaddleDetailView(id: id);
 }
 
 /// Featured is the default, so it has no parameter.

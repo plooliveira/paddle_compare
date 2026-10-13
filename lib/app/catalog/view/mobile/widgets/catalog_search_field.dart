@@ -15,7 +15,7 @@ class CatalogSearchField extends StatelessWidget {
     return TextField(
       controller: controller,
       onChanged: onChanged,
-      onTapOutside: (_) => FocusScope.of(context).unfocus(),
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       textInputAction: TextInputAction.search,
       autocorrect: false,
       scrollPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),

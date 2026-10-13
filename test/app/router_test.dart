@@ -4,11 +4,47 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/catalog/controller/catalog_filter.dart';
 import 'package:paddle_compare/app/catalog/view/catalog_view.dart';
+import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/router.dart';
+import 'package:paddle_compare/core/theme/app_theme.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
 import '../helpers/fake_paddle_repository.dart';
+
+const _paddle = Paddle(id: 'summit', brand: 'Apex Court', name: 'Summit Pro');
+
+Future<GoRouter> _pumpApp(WidgetTester tester, String location) async {
+  tester.view.physicalSize = const Size(375, 812) * 3;
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
+  final router = GoRouter(routes: $appRoutes, initialLocation: location);
+  addTearDown(router.dispose);
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        paddleRepositoryProvider.overrideWithValue(
+          FakePaddleRepository([_paddle]),
+        ),
+      ],
+      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return router;
+}
+
+double _backButtonOpacity(WidgetTester tester) => tester
+    .widget<FadeTransition>(
+      find
+          .ancestor(
+            of: find.byType(BackButton),
+            matching: find.byType(FadeTransition),
+          )
+          .first,
+    )
+    .opacity
+    .value;
 
 final _everything = CatalogFilter(
   query: 'apex court',
@@ -132,5 +168,41 @@ void main() {
       tester.widget<CatalogView>(find.byType(CatalogView)).filter,
       _everything,
     );
+  });
+
+  testWidgets('a detail link has the catalog underneath to go back to', (
+    tester,
+  ) async {
+    final router = await _pumpApp(tester, '/paddles/summit');
+
+    expect(
+      tester.widget<PaddleDetailView>(find.byType(PaddleDetailView)).id,
+      'summit',
+    );
+    expect(find.text('Summit Pro'), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PaddleDetailView), findsNothing);
+    expect(find.byType(CatalogView), findsOneWidget);
+    expect(router.routerDelegate.currentConfiguration.uri.path, '/');
+  });
+
+  testWidgets('the back button fades in while the detail page slides in', (
+    tester,
+  ) async {
+    await _pumpApp(tester, '/');
+
+    await tester.tap(find.text('View details'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(_backButtonOpacity(tester), allOf(greaterThan(0), lessThan(1)));
+
+    await tester.pumpAndSettle();
+
+    expect(_backButtonOpacity(tester), 1);
+    expect(find.text('Summit Pro'), findsWidgets);
   });
 }

@@ -29,15 +29,12 @@ enum _Status { loading, refreshing, error, ready }
 class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
   static const _searchDebounce = Duration(milliseconds: 300);
 
-  // Seeded from the URL, so swapping variants keeps the search.
   late final _search = TextEditingController(
     text: ref.read(catalogFilterProvider).query,
   );
   final _scroll = ScrollController();
   Timer? _searchTimer;
 
-  /// The last search this page put in the URL. It can land after the user
-  /// typed more, and must not overwrite the field then.
   String? _sentQuery;
 
   @override
@@ -59,9 +56,8 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
     });
   }
 
-  void _openDetails(Paddle paddle) {
-    // TODO: push PaddleDetailRoute once the detail feature exists.
-  }
+  void _openDetails(Paddle paddle) =>
+      PaddleDetailRoute(id: paddle.id).push(context);
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +71,14 @@ class _CatalogMobilePageState extends ConsumerState<CatalogMobilePage> {
       _searchTimer?.cancel();
       _search.text = query;
     });
-    // New results start from the top.
+    // New results start from the top. Under a deep-linked page the catalog
+    // loads without ever being laid out; it is at the top already then.
     ref.listen(
       catalogControllerProvider.select((state) => state.value?.query),
       (_, _) {
-        if (_scroll.hasClients) _scroll.jumpTo(0);
+        if (_scroll.hasClients && _scroll.position.hasContentDimensions) {
+          _scroll.jumpTo(0);
+        }
       },
     );
     final status = ref.watch(
