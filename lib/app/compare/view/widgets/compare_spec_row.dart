@@ -6,11 +6,6 @@ import '../../../../core/widgets/skeleton_box.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
 import 'compare_specs.dart';
 
-/// A spec across the comparison: its label, then one cell per column. Built
-/// row by row, so values line up even when one of them wraps.
-///
-/// The label sits above the cells, or beside them in a column of
-/// [labelWidth] when there's room for it.
 class CompareSpecRow extends StatelessWidget {
   CompareSpecRow.text({
     super.key,
@@ -19,6 +14,7 @@ class CompareSpecRow extends StatelessWidget {
     this.labelWidth,
     this.gap = defaultGap,
   }) : label = spec.label,
+       _value = spec.value,
        _cell = ((paddle) =>
            _TextCell(paddle: paddle, value: spec.value(paddle)));
 
@@ -29,6 +25,7 @@ class CompareSpecRow extends StatelessWidget {
     this.labelWidth,
     this.gap = defaultGap,
   }) : label = spec.label,
+       _value = spec.rating,
        _cell = ((paddle) =>
            _RatingCell(paddle: paddle, rating: spec.rating(paddle)));
 
@@ -44,13 +41,20 @@ class CompareSpecRow extends StatelessWidget {
 
   final double gap;
 
+  final Object? Function(Paddle) _value;
+
   final Widget Function(Paddle) _cell;
 
   @override
   Widget build(BuildContext context) {
+    final differs = CompareSpecs.differ([
+      for (final slot in slots)
+        if (slot case AsyncValue(isLoading: false, value: final paddle?))
+          _value(paddle),
+    ]);
     final label = Text(
       this.label.toUpperCase(),
-      semanticsLabel: this.label,
+      semanticsLabel: differs ? '${this.label}, differs' : this.label,
       style: Theme.of(context).textTheme.labelSmall,
     );
     final cells = [
@@ -66,7 +70,7 @@ class CompareSpecRow extends StatelessWidget {
         ),
       ],
     ];
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: switch (labelWidth) {
         null => Column(
@@ -93,7 +97,32 @@ class CompareSpecRow extends StatelessWidget {
         ),
       },
     );
+    if (!differs) return row;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [const _DiffersBand(), row],
+    );
   }
+}
+
+/// The background of a row whose values differ. It reaches past the row
+/// into the page's margin, so the values keep their place.
+class _DiffersBand extends StatelessWidget {
+  const _DiffersBand();
+
+  static const _overhang = 8.0;
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    left: -_overhang,
+    right: -_overhang,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+      ),
+    ),
+  );
 }
 
 /// The height of a line of values, so a row keeps its height once loaded.

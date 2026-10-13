@@ -2,7 +2,7 @@ class ApiConfig {
   const ApiConfig({
     this.minLatency = const Duration(milliseconds: 300),
     this.maxLatency = const Duration(milliseconds: 800),
-    this.failureRate = 0.15,
+    this.failureRate = 0.10,
   }) : assert(failureRate >= 0 && failureRate <= 1);
 
   final Duration minLatency;

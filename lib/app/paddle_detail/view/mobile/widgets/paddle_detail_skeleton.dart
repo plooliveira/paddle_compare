@@ -40,6 +40,12 @@ class _PaddleDetailSkeletonState extends State<PaddleDetailSkeleton>
   @override
   Widget build(BuildContext context) {
     final block = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    // This is an example of code I don't like, and AI does it a lot. Its excuse is
+    // that it doesn't mess with Flutter's element reconciliation. But it's just a
+    // shortcut: these helpers aren't widgets, so they share the parent's context
+    // and rebuild with it. In my experience it ends up becoming a pattern, and
+    // sooner or later it introduces small bugs and unnecessary rebuilds. Plus... it's ugly.
     Widget bar(double width, double height) =>
         _Bar(width: width, height: height, color: block);
     Widget tiles() => Row(

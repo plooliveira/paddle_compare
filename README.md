@@ -18,33 +18,6 @@ flutter run -d chrome         # or an iOS/Android device
 flutter test
 ```
 
-## Architecture
-_TODO_
+## Notes
 
-### Folder structure
-
-_TODO_
-
-### Providers
-
-_TODO_
-
-### Routing
-
-_TODO_
-
-## Key decisions and trade-offs
-
-_TODO_
-
-### Deliberately left out
-
-_TODO_
-
-## How I used AI
-
-_TODO: tools used, what worked, and what I changed or rejected._
-
-## With another day
-
-_TODO_
+Architecture, key decisions and trade-offs, how I used AI, and what I would do with another day are in [NOTES.md](NOTES.md).
