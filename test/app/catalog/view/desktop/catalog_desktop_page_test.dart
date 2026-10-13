@@ -1,12 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/catalog/view/desktop/catalog_desktop_page.dart';
 import 'package:paddle_compare/app/catalog/view/mobile/catalog_mobile_page.dart';
-import 'package:paddle_compare/app/catalog/view/widgets/compare_tray.dart';
+import 'package:paddle_compare/app/compare/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card_skeleton.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
@@ -14,6 +13,7 @@ import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 
 import '../../../../helpers/catalog_pages.dart';
 import '../../../../helpers/fake_paddle_repository.dart';
+import '../../../../helpers/url_reports.dart';
 
 const _desktop = Size(1280, 800);
 
@@ -72,22 +72,6 @@ Future<void> _scrollTo(WidgetTester tester, String name, String label) async {
   await tester.pumpAndSettle();
 }
 
-/// Records the URLs reported to the browser.
-List<Map<Object?, Object?>> _recordUrlReports(WidgetTester tester) {
-  final reports = <Map<Object?, Object?>>[];
-  final messenger = tester.binding.defaultBinaryMessenger;
-  messenger.setMockMethodCallHandler(SystemChannels.navigation, (call) async {
-    if (call.method == 'routeInformationUpdated') {
-      reports.add(call.arguments as Map<Object?, Object?>);
-    }
-    return null;
-  });
-  addTearDown(
-    () => messenger.setMockMethodCallHandler(SystemChannels.navigation, null),
-  );
-  return reports;
-}
-
 void main() {
   testWidgets('shows skeletons while loading, then three cards per row', (
     tester,
@@ -120,7 +104,7 @@ void main() {
   testWidgets('the sidebar filters in place, and Reset clears it', (
     tester,
   ) async {
-    final reports = _recordUrlReports(tester);
+    final reports = recordUrlReports(tester);
     final router = await _pumpPage(
       tester,
       FakePaddleRepository(catalogPaddles(5)),

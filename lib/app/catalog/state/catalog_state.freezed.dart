@@ -15,10 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CatalogState {
 
-/// Every page loaded so far for [query], in the order the server
-/// returned them.
- List<Paddle> get paddles; PaddleQuery get query; bool get hasMore; bool get isLoadingMore;/// Set when loading the next page failed. The loaded pages are kept.
- Object? get loadMoreError;
+ List<Paddle> get paddles; PaddleQuery get query; bool get hasMore; bool get isLoadingMore; Object? get loadMoreError;
 /// Create a copy of CatalogState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -230,11 +227,7 @@ class _CatalogState implements CatalogState {
   const _CatalogState({required  List<Paddle> paddles, required this.query, required this.hasMore, this.isLoadingMore = false, this.loadMoreError}): _paddles = paddles;
   
 
-/// Every page loaded so far for [query], in the order the server
-/// returned them.
  final  List<Paddle> _paddles;
-/// Every page loaded so far for [query], in the order the server
-/// returned them.
 @override List<Paddle> get paddles {
   if (_paddles is EqualUnmodifiableListView) return _paddles;
   // ignore: implicit_dynamic_type
@@ -244,7 +237,6 @@ class _CatalogState implements CatalogState {
 @override final  PaddleQuery query;
 @override final  bool hasMore;
 @override@JsonKey() final  bool isLoadingMore;
-/// Set when loading the next page failed. The loaded pages are kept.
 @override final  Object? loadMoreError;
 
 /// Create a copy of CatalogState

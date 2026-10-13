@@ -54,18 +54,11 @@ final class CatalogFilterProvider
 
 String _$catalogFilterHash() => r'6cb71a433b042cc7fc2c11070e933becf78956e8';
 
-/// Loads, page by page, the paddles matching the filter in the URL. A new
-/// filter reloads from the first page.
-
 @ProviderFor(CatalogController)
 final catalogControllerProvider = CatalogControllerProvider._();
 
-/// Loads, page by page, the paddles matching the filter in the URL. A new
-/// filter reloads from the first page.
 final class CatalogControllerProvider
     extends $AsyncNotifierProvider<CatalogController, CatalogState> {
-  /// Loads, page by page, the paddles matching the filter in the URL. A new
-  /// filter reloads from the first page.
   CatalogControllerProvider._()
     : super(
         from: null,
@@ -90,9 +83,6 @@ final class CatalogControllerProvider
 }
 
 String _$catalogControllerHash() => r'7cdec4d6392d2fdc25e9624ed1ae68b7db2c8912';
-
-/// Loads, page by page, the paddles matching the filter in the URL. A new
-/// filter reloads from the first page.
 
 abstract class _$CatalogController extends $AsyncNotifier<CatalogState> {
   FutureOr<CatalogState> build();

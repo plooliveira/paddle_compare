@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import '../../../core/widgets/adaptive_view.dart';
 import '../../compare/controller/compare_controller.dart';
 import '../controller/paddle_detail_controller.dart';
+import 'desktop/paddle_detail_desktop_page.dart';
 import 'mobile/paddle_detail_mobile_page.dart';
 
 class PaddleDetailView extends StatefulWidget {
@@ -60,8 +61,7 @@ class _PaddleDetailViewState extends State<PaddleDetailView> {
       container: _container,
       child: AdaptiveView(
         mobile: (_) => const PaddleDetailMobilePage(),
-        // TODO: desktop variant. The mobile one stands in until then.
-        desktop: (_) => const PaddleDetailMobilePage(),
+        desktop: (_) => const PaddleDetailDesktopPage(),
       ),
     );
   }

@@ -112,15 +112,24 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
   /// Adds [id] to the comparison. If that makes [limit] paddles, the
   /// comparison opens. Otherwise the catalog shows with the paddle in its
   /// tray: in place from the catalog, or back from a page above it, which
-  /// leaves with its pop animation. Either way the catalog keeps its page and
-  /// filter, so the grid doesn't reload.
+  /// leaves with its pop animation. With [stayOnPage], a page above the
+  /// catalog stays instead, and only its URL changes (see [replaceOnPage]).
+  /// Either way the catalog keeps its page and filter, so the grid doesn't
+  /// reload.
   ///
-  /// [limit] comes from the caller (`CompareLimits.of`): routes don't apply
-  /// form-factor rules.
-  void addToCompare(BuildContext context, String id, {required int limit}) {
+  /// [limit] and [stayOnPage] come from the caller (`CompareLimits.of`, the
+  /// desktop detail page): routes don't apply form-factor rules.
+  void addToCompare(
+    BuildContext context,
+    String id, {
+    required int limit,
+    bool stayOnPage = false,
+  }) {
     final next = withCompare([...compareIds, id]);
     if (next.compareIds.length >= limit) {
       next.goCompare(context);
+    } else if (stayOnPage) {
+      next.replaceOnPage(context);
     } else if (GoRouterState.of(context).uri.path == Uri.parse(location).path) {
       next.goInPlace(context);
     } else {
@@ -132,6 +141,17 @@ class CatalogRoute extends GoRouteData with $CatalogRoute {
   /// instead of undoing filters one by one.
   void goInPlace(BuildContext context) =>
       Router.neglect(context, () => go(context));
+
+  /// Applies this query to the page of [context], without a history entry:
+  /// the catalog underneath and that page both get it, and that page stays.
+  /// On the catalog itself it is [goInPlace].
+  void replaceOnPage(BuildContext context) {
+    final path = GoRouterState.of(context).matchedLocation;
+    Router.neglect(
+      context,
+      () => context.go(Uri.parse(location).replace(path: path).toString()),
+    );
+  }
 
   Future<void> pushDetails(BuildContext context, String id) =>
       context.push(_nested(PaddleDetailRoute(id: id)));
@@ -157,6 +177,22 @@ class PaddleDetailRoute extends GoRouteData with $PaddleDetailRoute {
   const PaddleDetailRoute({required this.id});
 
   final String id;
+
+  static const _pageKey = '/paddles/:id';
+
+  /// What go_router builds from [build], except for the key. go_router keys a
+  /// pushed page apart from a matched one, and the detail page is usually
+  /// pushed. With one key, the `go` of [CatalogRoute.replaceOnPage] updates
+  /// that page instead of replacing it with a new one.
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      MaterialPage<void>(
+        key: const ValueKey(_pageKey),
+        name: state.name ?? state.path,
+        arguments: {...state.pathParameters, ...state.uri.queryParameters},
+        restorationId: _pageKey,
+        child: build(context, state),
+      );
 
   @override
   Widget build(BuildContext context, GoRouterState state) => PaddleDetailView(

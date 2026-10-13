@@ -57,15 +57,11 @@ final class PaddleDetailIdProvider
 
 String _$paddleDetailIdHash() => r'60aded5b73dbd01e5b3362baece47da2dd38968a';
 
-/// The paddle whose id is in the URL, or null when there is no such paddle.
-
 @ProviderFor(PaddleDetailController)
 final paddleDetailControllerProvider = PaddleDetailControllerProvider._();
 
-/// The paddle whose id is in the URL, or null when there is no such paddle.
 final class PaddleDetailControllerProvider
     extends $AsyncNotifierProvider<PaddleDetailController, Paddle?> {
-  /// The paddle whose id is in the URL, or null when there is no such paddle.
   PaddleDetailControllerProvider._()
     : super(
         from: null,
@@ -91,8 +87,6 @@ final class PaddleDetailControllerProvider
 
 String _$paddleDetailControllerHash() =>
     r'5cab054cb4a0f3a1854cad7fa7a18602f6544420';
-
-/// The paddle whose id is in the URL, or null when there is no such paddle.
 
 abstract class _$PaddleDetailController extends $AsyncNotifier<Paddle?> {
   FutureOr<Paddle?> build();

@@ -5,10 +5,13 @@ import '../../../../core/widgets/paddle_image.dart';
 import '../../../../core/widgets/skeleton_box.dart';
 import '../../../../core/widgets/skeleton_pulse.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
-import '../../../compare/controller/compare_controller.dart';
 import '../../../router.dart';
-import '../../controller/catalog_controller.dart';
+import '../../controller/compare_controller.dart';
 
+/// Shown at the bottom of the catalog and of the desktop detail page. It
+/// reads the catalog route from its page's URL, so a removal updates that
+/// page in place.
+///
 /// Watching each paddle here is what loads it. The catalog stays mounted
 /// under a paddle's page, so a paddle added there starts loading while that
 /// page leaves.
@@ -28,17 +31,15 @@ class CompareTray extends ConsumerWidget {
     final colors = theme.colorScheme;
     final ids = ref.watch(compareIdsProvider).take(slots).toList();
 
-    CatalogRoute route() => CatalogRoute.fromFilter(
-      ref.read(catalogFilterProvider),
-      compare: ref.read(compareIdsProvider),
-    );
-
-    void remove(String id) => route()
-        .withCompare([
-          for (final other in ref.read(compareIdsProvider))
-            if (other != id) other,
-        ])
-        .goInPlace(context);
+    void remove(String id) {
+      final route = CatalogRoute.of(context);
+      route
+          .withCompare([
+            for (final other in route.compareIds)
+              if (other != id) other,
+          ])
+          .replaceOnPage(context);
+    }
 
     return Material(
       color: theme.scaffoldBackgroundColor,
@@ -48,7 +49,7 @@ class CompareTray extends ConsumerWidget {
         button: true,
         label: 'Open comparison',
         child: InkWell(
-          onTap: () => route().goCompare(context),
+          onTap: () => CatalogRoute.of(context).goCompare(context),
           child: SafeArea(
             top: false,
             child: Padding(

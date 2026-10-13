@@ -3,19 +3,28 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/widgets/paddle_image.dart';
 
 class PaddleDetailImage extends StatelessWidget {
-  const PaddleDetailImage({super.key, required this.imagePath});
+  const PaddleDetailImage({
+    super.key,
+    required this.imagePath,
+    this.aspectRatio = 1,
+    this.maxHeight = defaultMaxHeight,
+  });
 
-  static const maxHeight = 360.0;
+  static const defaultMaxHeight = 360.0;
 
   final String? imagePath;
+  final double aspectRatio;
+
+  /// [double.infinity] leaves the height to the parent's constraints.
+  final double maxHeight;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: maxHeight),
+      constraints: BoxConstraints(maxHeight: maxHeight),
       child: AspectRatio(
-        aspectRatio: 1,
+        aspectRatio: aspectRatio,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: colors.surfaceContainerHighest,

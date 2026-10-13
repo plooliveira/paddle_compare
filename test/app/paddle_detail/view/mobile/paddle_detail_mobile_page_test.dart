@@ -4,16 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:paddle_compare/app/catalog/view/widgets/compare_tray.dart';
+import 'package:paddle_compare/app/compare/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
-import 'package:paddle_compare/app/paddle_detail/view/widgets/paddle_detail_skeleton.dart';
+import 'package:paddle_compare/app/paddle_detail/view/mobile/widgets/paddle_detail_skeleton.dart';
 import 'package:paddle_compare/app/router.dart';
 import 'package:paddle_compare/core/theme/app_theme.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
-import '../../../../helpers/catalog_pages.dart';
 import '../../../../helpers/fake_paddle_repository.dart';
 
 const _full = Paddle(
@@ -238,59 +237,6 @@ void main() {
       'other',
       'summit',
     ]);
-  });
-
-  group('at desktop width, three paddles fit', () {
-    Future<GoRouter> pumpDesktop(WidgetTester tester, String location) =>
-        pumpCatalogPage(
-          tester,
-          FakePaddleRepository([_full]),
-          location: location,
-          size: const Size(1280, 800),
-          devicePixelRatio: 1,
-        );
-
-    testWidgets('a second paddle goes back to the catalog', (tester) async {
-      final router = await pumpDesktop(tester, '/paddles/summit?compare=a');
-      await tester.pumpAndSettle();
-
-      await tester.tap(_compareButton);
-      await tester.pumpAndSettle();
-
-      expect(_url(router).toString(), '/?compare=a&compare=summit');
-      expect(find.byType(PaddleDetailView), findsNothing);
-      expect(find.byType(CompareView), findsNothing);
-    });
-
-    testWidgets('the third paddle opens the comparison', (tester) async {
-      final router = await pumpDesktop(
-        tester,
-        '/paddles/summit?compare=a&compare=b',
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Compare is full'), findsNothing);
-      await tester.tap(_compareButton);
-      await tester.pumpAndSettle();
-
-      expect(
-        _url(router).toString(),
-        '/compare?compare=a&compare=b&compare=summit',
-      );
-    });
-
-    testWidgets('says the comparison is full at three', (tester) async {
-      await pumpDesktop(
-        tester,
-        '/paddles/summit?compare=a&compare=b&compare=c',
-      );
-      await tester.pumpAndSettle();
-
-      expect(
-        tester.widget<ButtonStyleButton>(_barButton('Compare is full')).enabled,
-        isFalse,
-      );
-    });
   });
 
   testWidgets('highlights the key specs and the ratings', (tester) async {

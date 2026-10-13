@@ -15,7 +15,6 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PaddleQuery {
 
-/// Matched against brand or name, ignoring case. Null matches everything.
  String? get search;/// Empty means every shape.
  Set<PaddleShape> get shapes;/// Inclusive. Null means no limit on that end.
  double? get minPrice; double? get maxPrice; bool get inStockOnly; PaddleSort get sort;
@@ -223,7 +222,6 @@ class _PaddleQuery implements PaddleQuery {
   const _PaddleQuery({this.search,  Set<PaddleShape> shapes = const <PaddleShape>{}, this.minPrice, this.maxPrice, this.inStockOnly = false, this.sort = PaddleSort.featured}): _shapes = shapes;
   
 
-/// Matched against brand or name, ignoring case. Null matches everything.
 @override final  String? search;
 /// Empty means every shape.
  final  Set<PaddleShape> _shapes;

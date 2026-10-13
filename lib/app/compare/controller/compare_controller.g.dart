@@ -60,8 +60,6 @@ final class CompareIdsProvider
 
 String _$compareIdsHash() => r'cbcdb10dc0dfd8d826f51c022d0830b34a237ecd';
 
-/// One paddle of the comparison, or null when there is no such paddle.
-///
 /// One per id, so each column loads, fails and retries on its own, and a new
 /// id in the URL only loads that paddle. It takes no scoped dependencies, so
 /// the catalog's tray and the comparison sheet share it, and each id is
@@ -70,16 +68,12 @@ String _$compareIdsHash() => r'cbcdb10dc0dfd8d826f51c022d0830b34a237ecd';
 @ProviderFor(ComparePaddleController)
 final comparePaddleControllerProvider = ComparePaddleControllerFamily._();
 
-/// One paddle of the comparison, or null when there is no such paddle.
-///
 /// One per id, so each column loads, fails and retries on its own, and a new
 /// id in the URL only loads that paddle. It takes no scoped dependencies, so
 /// the catalog's tray and the comparison sheet share it, and each id is
 /// requested once.
 final class ComparePaddleControllerProvider
     extends $AsyncNotifierProvider<ComparePaddleController, Paddle?> {
-  /// One paddle of the comparison, or null when there is no such paddle.
-  ///
   /// One per id, so each column loads, fails and retries on its own, and a new
   /// id in the URL only loads that paddle. It takes no scoped dependencies, so
   /// the catalog's tray and the comparison sheet share it, and each id is
@@ -124,8 +118,6 @@ final class ComparePaddleControllerProvider
 String _$comparePaddleControllerHash() =>
     r'd079592b5c6ee2248e5c3bee1a30c3f5dc2c5394';
 
-/// One paddle of the comparison, or null when there is no such paddle.
-///
 /// One per id, so each column loads, fails and retries on its own, and a new
 /// id in the URL only loads that paddle. It takes no scoped dependencies, so
 /// the catalog's tray and the comparison sheet share it, and each id is
@@ -149,8 +141,6 @@ final class ComparePaddleControllerFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// One paddle of the comparison, or null when there is no such paddle.
-  ///
   /// One per id, so each column loads, fails and retries on its own, and a new
   /// id in the URL only loads that paddle. It takes no scoped dependencies, so
   /// the catalog's tray and the comparison sheet share it, and each id is
@@ -163,8 +153,6 @@ final class ComparePaddleControllerFamily extends $Family
   String toString() => r'comparePaddleControllerProvider';
 }
 
-/// One paddle of the comparison, or null when there is no such paddle.
-///
 /// One per id, so each column loads, fails and retries on its own, and a new
 /// id in the URL only loads that paddle. It takes no scoped dependencies, so
 /// the catalog's tray and the comparison sheet share it, and each id is

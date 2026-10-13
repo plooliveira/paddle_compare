@@ -10,7 +10,7 @@ import '../widgets/catalog_header.dart';
 import '../widgets/catalog_results.dart';
 import '../widgets/catalog_search_field.dart';
 import '../widgets/catalog_status.dart';
-import '../widgets/compare_tray.dart';
+import '../../../compare/view/widgets/compare_tray.dart';
 import 'widgets/active_filters_bar.dart';
 import 'widgets/catalog_toolbar.dart';
 import 'widgets/filter_sheet.dart';

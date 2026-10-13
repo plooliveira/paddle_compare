@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/catalog/view/mobile/widgets/filter_sheet.dart';
-import 'package:paddle_compare/app/catalog/view/widgets/compare_tray.dart';
+import 'package:paddle_compare/app/compare/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card_skeleton.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
@@ -14,6 +13,7 @@ import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 
 import '../../../../helpers/catalog_pages.dart';
 import '../../../../helpers/fake_paddle_repository.dart';
+import '../../../../helpers/url_reports.dart';
 
 Uri _url(GoRouter router) => router.routerDelegate.currentConfiguration.uri;
 
@@ -55,22 +55,6 @@ Future<void> _scrollTo(WidgetTester tester, String name) async {
     alignment: 0.5,
   );
   await tester.pumpAndSettle();
-}
-
-/// Records the URLs reported to the browser.
-List<Map<Object?, Object?>> _recordUrlReports(WidgetTester tester) {
-  final reports = <Map<Object?, Object?>>[];
-  final messenger = tester.binding.defaultBinaryMessenger;
-  messenger.setMockMethodCallHandler(SystemChannels.navigation, (call) async {
-    if (call.method == 'routeInformationUpdated') {
-      reports.add(call.arguments as Map<Object?, Object?>);
-    }
-    return null;
-  });
-  addTearDown(
-    () => messenger.setMockMethodCallHandler(SystemChannels.navigation, null),
-  );
-  return reports;
 }
 
 void main() {
@@ -334,7 +318,7 @@ void main() {
   testWidgets('a filter change replaces the history entry, not adds one', (
     tester,
   ) async {
-    final reports = _recordUrlReports(tester);
+    final reports = recordUrlReports(tester);
     await pumpCatalogPage(tester, FakePaddleRepository(catalogPaddles(5)));
     await tester.pumpAndSettle();
     reports.clear();
@@ -431,7 +415,7 @@ void main() {
     });
 
     testWidgets('a card adds its paddle to the tray, in place', (tester) async {
-      final reports = _recordUrlReports(tester);
+      final reports = recordUrlReports(tester);
       final repository = FakePaddleRepository(catalogPaddles(3));
       final router = await pumpCatalogPage(tester, repository);
       await tester.pumpAndSettle();
@@ -545,7 +529,7 @@ void main() {
     testWidgets('removing the last paddle hides the tray, in place', (
       tester,
     ) async {
-      final reports = _recordUrlReports(tester);
+      final reports = recordUrlReports(tester);
       await pumpCatalogPage(
         tester,
         FakePaddleRepository(catalogPaddles(3)),

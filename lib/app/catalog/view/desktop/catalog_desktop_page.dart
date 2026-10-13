@@ -12,7 +12,7 @@ import '../widgets/catalog_result_count.dart';
 import '../widgets/catalog_results.dart';
 import '../widgets/catalog_search_field.dart';
 import '../widgets/catalog_status.dart';
-import '../widgets/compare_tray.dart';
+import '../../../compare/view/widgets/compare_tray.dart';
 import 'widgets/filter_sidebar.dart';
 import 'widgets/sort_menu.dart';
 

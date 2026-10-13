@@ -6,48 +6,50 @@ import '../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../../shared/paddle_labels.dart';
 
 class KeySpecsGrid extends StatelessWidget {
-  const KeySpecsGrid({super.key, required this.paddle});
+  const KeySpecsGrid({super.key, required this.paddle, this.columns = 2})
+    : assert(columns == 2 || columns == 4);
 
   final Paddle paddle;
+
+  /// 2 makes a 2×2 grid, 4 a single row.
+  final int columns;
 
   @override
   Widget build(BuildContext context) {
     final weight = paddle.weightOz;
     final core = paddle.coreThicknessMm;
     final face = paddle.faceMaterial;
-
-    Widget row(Widget start, Widget end) => IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: start),
-          const SizedBox(width: 8),
-          Expanded(child: end),
-        ],
+    final tiles = [
+      _SpecTile(label: 'Shape', value: paddle.shape?.label),
+      _SpecTile(
+        label: 'Weight',
+        value: weight != null ? formatOunces(weight) : null,
+        detail: weight != null ? formatOuncesAsGrams(weight) : null,
       ),
-    );
+      _SpecTile(
+        label: 'Core',
+        value: core != null ? formatMillimeters(core) : null,
+      ),
+      _SpecTile(label: 'Face', value: face != null ? capitalize(face) : null),
+    ];
 
     return Column(
       children: [
-        row(
-          _SpecTile(label: 'Shape', value: paddle.shape?.label),
-          _SpecTile(
-            label: 'Weight',
-            value: weight != null ? formatOunces(weight) : null,
-            detail: weight != null ? formatOuncesAsGrams(weight) : null,
+        for (var start = 0; start < tiles.length; start += columns) ...[
+          if (start > 0) const SizedBox(height: 8),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final (index, tile)
+                    in tiles.skip(start).take(columns).indexed) ...[
+                  if (index > 0) const SizedBox(width: 8),
+                  Expanded(child: tile),
+                ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        row(
-          _SpecTile(
-            label: 'Core',
-            value: core != null ? formatMillimeters(core) : null,
-          ),
-          _SpecTile(
-            label: 'Face',
-            value: face != null ? capitalize(face) : null,
-          ),
-        ),
+        ],
       ],
     );
   }

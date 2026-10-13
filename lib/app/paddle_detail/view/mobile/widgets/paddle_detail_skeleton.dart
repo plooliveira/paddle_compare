@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import 'paddle_detail_image.dart';
+import '../../widgets/paddle_detail_image.dart';
 
 class PaddleDetailSkeleton extends StatefulWidget {
   const PaddleDetailSkeleton({super.key});
@@ -63,7 +63,7 @@ class _PaddleDetailSkeletonState extends State<PaddleDetailSkeleton>
               children: [
                 ConstrainedBox(
                   constraints: const BoxConstraints(
-                    maxHeight: PaddleDetailImage.maxHeight,
+                    maxHeight: PaddleDetailImage.defaultMaxHeight,
                   ),
                   child: AspectRatio(
                     aspectRatio: 1,
