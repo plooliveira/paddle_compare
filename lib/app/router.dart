@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../core/utils/form_factor.dart';
 import '../data/repositories/paddle/paddle_repository.dart';
 import 'catalog/controller/catalog_filter.dart';
 import 'catalog/view/catalog_view.dart';
@@ -201,14 +202,27 @@ class PaddleDetailRoute extends GoRouteData with $PaddleDetailRoute {
   );
 }
 
+/// A bottom sheet on mobile and a page of its own on desktop, at the same
+/// URL. The only route that depends on form factor: a view can't choose what
+/// it is shown in. Both pages have the same key, so a resize across
+/// [FormFactor.desktopMinWidth] replaces one with the other.
 class CompareRoute extends GoRouteData with $CompareRoute {
   const CompareRoute();
 
   @override
-  Page<void> buildPage(BuildContext context, GoRouterState state) => _SheetPage(
-    key: state.pageKey,
-    child: CompareView(ids: $CatalogRoute._fromState(state).compareIds),
-  );
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    final child = CompareView(ids: $CatalogRoute._fromState(state).compareIds);
+    return switch (FormFactor.of(context)) {
+      FormFactor.mobile => _SheetPage(key: state.pageKey, child: child),
+      FormFactor.desktop => MaterialPage<void>(
+        key: state.pageKey,
+        name: state.name ?? state.path,
+        arguments: {...state.pathParameters, ...state.uri.queryParameters},
+        restorationId: state.pageKey.value,
+        child: child,
+      ),
+    };
+  }
 }
 
 /// A page shown as a modal bottom sheet. Being a page, it is in the URL: a

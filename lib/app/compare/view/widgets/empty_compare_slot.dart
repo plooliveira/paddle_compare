@@ -3,9 +3,14 @@ import 'package:material_ui/material_ui.dart';
 import 'compare_slot_skeleton.dart';
 
 class EmptyCompareSlot extends StatelessWidget {
-  const EmptyCompareSlot({super.key, required this.onSelect});
+  const EmptyCompareSlot({
+    super.key,
+    required this.onSelect,
+    this.imageMaxHeight = double.infinity,
+  });
 
   final VoidCallback onSelect;
+  final double imageMaxHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +18,7 @@ class EmptyCompareSlot extends StatelessWidget {
     final colors = theme.colorScheme;
     const shape = BorderRadius.all(Radius.circular(4));
     return CompareSlotSkeleton(
+      imageMaxHeight: imageMaxHeight,
       image: Material(
         color: colors.surface,
         shape: RoundedRectangleBorder(

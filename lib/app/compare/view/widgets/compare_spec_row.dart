@@ -1,18 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/utils/missing_spec.dart';
-import '../../../../../core/widgets/skeleton_box.dart';
-import '../../../../../data/repositories/paddle/paddle_repository.dart';
-import '../../widgets/compare_specs.dart';
+import '../../../../core/utils/missing_spec.dart';
+import '../../../../core/widgets/skeleton_box.dart';
+import '../../../../data/repositories/paddle/paddle_repository.dart';
+import 'compare_specs.dart';
 
 /// A spec across the comparison: its label, then one cell per column. Built
 /// row by row, so values line up even when one of them wraps.
+///
+/// The label sits above the cells, or beside them in a column of
+/// [labelWidth] when there's room for it.
 class CompareSpecRow extends StatelessWidget {
   CompareSpecRow.text({
     super.key,
     required CompareSpec spec,
     required this.slots,
+    this.labelWidth,
+    this.gap = defaultGap,
   }) : label = spec.label,
        _cell = ((paddle) =>
            _TextCell(paddle: paddle, value: spec.value(paddle)));
@@ -21,50 +26,73 @@ class CompareSpecRow extends StatelessWidget {
     super.key,
     required CompareRating spec,
     required this.slots,
+    this.labelWidth,
+    this.gap = defaultGap,
   }) : label = spec.label,
        _cell = ((paddle) =>
            _RatingCell(paddle: paddle, rating: spec.rating(paddle)));
 
-  static const columnGap = 12.0;
+  static const defaultGap = 12.0;
 
   final String label;
 
   /// One per column: null when it has no paddle yet.
   final List<AsyncValue<Paddle?>?> slots;
 
+  /// Null puts the label above the cells.
+  final double? labelWidth;
+
+  /// Between two columns.
+  final double gap;
+
   final Widget Function(Paddle) _cell;
 
   @override
   Widget build(BuildContext context) {
+    final label = Text(
+      this.label.toUpperCase(),
+      semanticsLabel: this.label,
+      style: Theme.of(context).textTheme.labelSmall,
+    );
+    final cells = [
+      for (final (index, slot) in slots.indexed) ...[
+        if (index > 0) SizedBox(width: gap),
+        Expanded(
+          child: switch (slot) {
+            null || AsyncValue(isLoading: true) => const _Placeholder(),
+            AsyncValue(hasError: true) => const SizedBox.shrink(),
+            AsyncValue(value: final paddle?) => _cell(paddle),
+            _ => const SizedBox.shrink(),
+          },
+        ),
+      ],
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            semanticsLabel: label,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final (index, slot) in slots.indexed) ...[
-                if (index > 0) const SizedBox(width: columnGap),
-                Expanded(
-                  child: switch (slot) {
-                    null || AsyncValue(isLoading: true) => const _Placeholder(),
-                    AsyncValue(hasError: true) => const SizedBox.shrink(),
-                    AsyncValue(value: final paddle?) => _cell(paddle),
-                    _ => const SizedBox.shrink(),
-                  },
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
+      child: switch (labelWidth) {
+        null => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            label,
+            const SizedBox(height: 8),
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: cells),
+          ],
+        ),
+        final labelWidth => Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: labelWidth,
+              // Centered on the first line of values.
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: _lineHeight),
+                child: Align(alignment: Alignment.centerLeft, child: label),
+              ),
+            ),
+            ...cells,
+          ],
+        ),
+      },
     );
   }
 }

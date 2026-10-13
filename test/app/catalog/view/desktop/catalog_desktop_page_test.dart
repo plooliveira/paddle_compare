@@ -37,7 +37,7 @@ String _searchText(WidgetTester tester) =>
 Finder _inTray(Finder finder) =>
     find.descendant(of: find.byType(CompareTray), matching: finder);
 
-Finder _inSheet(Finder finder) =>
+Finder _inComparison(Finder finder) =>
     find.descendant(of: find.byType(CompareView), matching: finder);
 
 /// The button of the card showing [name].
@@ -205,10 +205,14 @@ void main() {
       _url(router).toString(),
       '/compare?compare=p0&compare=p1&compare=p2',
     );
+    // A page of its own on desktop, with all three paddles.
     expect(find.byType(CompareView), findsOneWidget);
-    expect(_inSheet(find.text('Paddle 0')), findsOneWidget);
+    expect(find.byType(BottomSheet), findsNothing);
+    for (final name in ['Paddle 0', 'Paddle 1', 'Paddle 2']) {
+      expect(_inComparison(find.text(name)), findsOneWidget);
+    }
 
-    await tester.tap(find.byTooltip('Close'));
+    await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
 
     expect(_inTray(find.text('Paddle 2')), findsOneWidget);

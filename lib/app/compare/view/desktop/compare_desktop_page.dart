@@ -1,0 +1,167 @@
+import 'dart:math' as math;
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../../../core/widgets/fading_back_button.dart';
+import '../../../../data/repositories/paddle/paddle_repository.dart';
+import '../../controller/compare_controller.dart';
+import '../../controller/compare_limits.dart';
+import '../widgets/compare_section.dart';
+import '../widgets/compare_slot.dart';
+import '../widgets/compare_spec_row.dart';
+import '../widgets/compare_specs.dart';
+
+/// A page of its own, laid out as a table: the labels in a column on the
+/// left, then one column per paddle. Only the table scrolls, under a fixed
+/// top bar, as on the detail page.
+class CompareDesktopPage extends ConsumerWidget {
+  const CompareDesktopPage({super.key});
+
+  // The catalog's, so the pages line up.
+  static const _gutter = 24.0;
+  static const _maxContentWidth = 1200.0;
+  static const _compactWidth = 1024.0;
+
+  static const _gap = 24.0;
+
+  /// The images take at most this share of the window's height, so the
+  /// first specs are in sight under them, even in a short window.
+  static const _imageMaxHeightFraction = 0.3;
+  static const _imageMaxHeight = 260.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ids = ref
+        .watch(compareIdsProvider)
+        .take(CompareLimits.desktop)
+        .toList();
+    final slots = <AsyncValue<Paddle?>?>[
+      for (final id in ids) ref.watch(comparePaddleControllerProvider(id)),
+      for (var i = ids.length; i < CompareLimits.desktop; i++) null,
+    ];
+
+    final Size(:width, :height) = MediaQuery.sizeOf(context);
+    final margin = math.max(_gutter, (width - _maxContentWidth) / 2);
+    final labelWidth = width < _compactWidth ? 160.0 : 200.0;
+    final imageMaxHeight = math.min(
+      _imageMaxHeight,
+      height * _imageMaxHeightFraction,
+    );
+
+    CompareSpecRow text(CompareSpec spec) => CompareSpecRow.text(
+      spec: spec,
+      slots: slots,
+      labelWidth: labelWidth,
+      gap: _gap,
+    );
+
+    CompareSpecRow rating(CompareRating spec) => CompareSpecRow.rating(
+      spec: spec,
+      slots: slots,
+      labelWidth: labelWidth,
+      gap: _gap,
+    );
+
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _TopBar(margin: margin),
+            Expanded(
+              // Reaches the window's edge, so the scrollbar sits there, as in
+              // the catalog's grid.
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(margin, 32, margin, 48),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: labelWidth,
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              'Compare',
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                          ),
+                        ),
+                        for (final (index, slot) in slots.indexed) ...[
+                          if (index > 0) const SizedBox(width: _gap),
+                          Expanded(
+                            child: CompareSlot(
+                              id: ids.elementAtOrNull(index),
+                              slot: slot,
+                              imageMaxHeight: imageMaxHeight,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                    CompareSection(
+                      title: 'Key specs',
+                      rows: [for (final spec in CompareSpecs.key) text(spec)],
+                    ),
+                    const SizedBox(height: 32),
+                    CompareSection(
+                      title: 'Performance',
+                      rows: [
+                        for (final spec in CompareSpecs.performance)
+                          rating(spec),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    CompareSection(
+                      title: 'Full specifications',
+                      rows: [for (final spec in CompareSpecs.full) text(spec)],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TopBar extends StatelessWidget {
+  const _TopBar({required this.margin});
+
+  /// Lines the arrow up with the margin rather than the button's edge.
+  static const _backButtonInset = 8.0;
+
+  final double margin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            margin - _backButtonInset,
+            12,
+            margin,
+            12,
+          ),
+          child: Row(
+            children: [
+              const FadingBackButton(),
+              const SizedBox(width: 4),
+              Text('Paddles', style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+        ),
+        const Divider(),
+      ],
+    );
+  }
+}

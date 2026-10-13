@@ -2,16 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../core/widgets/skeleton_pulse.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../controller/compare_controller.dart';
 import '../../controller/compare_limits.dart';
+import '../widgets/compare_section.dart';
+import '../widgets/compare_slot.dart';
+import '../widgets/compare_spec_row.dart';
 import '../widgets/compare_specs.dart';
-import 'widgets/compare_slot_header.dart';
-import 'widgets/compare_slot_message.dart';
-import 'widgets/compare_slot_skeleton.dart';
-import 'widgets/compare_spec_row.dart';
-import 'widgets/empty_compare_slot.dart';
 
 class CompareMobilePage extends ConsumerWidget {
   const CompareMobilePage({super.key});
@@ -26,29 +23,6 @@ class CompareMobilePage extends ConsumerWidget {
       for (final id in ids) ref.watch(comparePaddleControllerProvider(id)),
       for (var i = ids.length; i < CompareLimits.mobile; i++) null,
     ];
-
-    Widget header(String? id, AsyncValue<Paddle?>? slot) => switch (slot) {
-      // Closes the sheet, so the paddle is picked from the catalog.
-      null => EmptyCompareSlot(onSelect: () => context.pop()),
-      AsyncValue(isLoading: true) => const SkeletonPulse(
-        child: CompareSlotSkeleton(),
-      ),
-      AsyncValue(hasError: true) => CompareSlotMessage(
-        icon: Icons.cloud_off_outlined,
-        title: "Couldn't load this paddle",
-        action: TextButton(
-          onPressed: ref
-              .read(comparePaddleControllerProvider(id!).notifier)
-              .retry,
-          child: const Text('Try again'),
-        ),
-      ),
-      AsyncValue(value: final paddle?) => CompareSlotHeader(paddle: paddle),
-      _ => const CompareSlotMessage(
-        icon: Icons.search_off,
-        title: 'Paddle not found',
-      ),
-    };
 
     return SafeArea(
       top: false,
@@ -88,15 +62,18 @@ class CompareMobilePage extends ConsumerWidget {
                     children: [
                       for (final (index, slot) in slots.indexed) ...[
                         if (index > 0)
-                          const SizedBox(width: CompareSpecRow.columnGap),
+                          const SizedBox(width: CompareSpecRow.defaultGap),
                         Expanded(
-                          child: header(ids.elementAtOrNull(index), slot),
+                          child: CompareSlot(
+                            id: ids.elementAtOrNull(index),
+                            slot: slot,
+                          ),
                         ),
                       ],
                     ],
                   ),
                   const SizedBox(height: 32),
-                  _Section(
+                  CompareSection(
                     title: 'Key specs',
                     rows: [
                       for (final spec in CompareSpecs.key)
@@ -104,7 +81,7 @@ class CompareMobilePage extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 28),
-                  _Section(
+                  CompareSection(
                     title: 'Performance',
                     rows: [
                       for (final spec in CompareSpecs.performance)
@@ -112,7 +89,7 @@ class CompareMobilePage extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 28),
-                  _Section(
+                  CompareSection(
                     title: 'Full specifications',
                     rows: [
                       for (final spec in CompareSpecs.full)
@@ -125,31 +102,6 @@ class CompareMobilePage extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.rows});
-
-  final String title;
-  final List<Widget> rows;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-        ),
-        const SizedBox(height: 4),
-        for (final (index, row) in rows.indexed) ...[
-          if (index > 0) const Divider(),
-          row,
-        ],
-      ],
     );
   }
 }

@@ -1,20 +1,25 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/widgets/skeleton_box.dart';
-import 'compare_slot_header.dart';
+import '../../../../core/widgets/skeleton_box.dart';
+import 'compare_slot_image_box.dart';
 
 class CompareSlotSkeleton extends StatelessWidget {
-  const CompareSlotSkeleton({super.key, this.image});
+  const CompareSlotSkeleton({
+    super.key,
+    this.image,
+    this.imageMaxHeight = double.infinity,
+  });
 
   final Widget? image;
+  final double imageMaxHeight;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AspectRatio(
-          aspectRatio: CompareSlotHeader.imageAspectRatio,
+        CompareSlotImageBox(
+          maxHeight: imageMaxHeight,
           child: image ?? const SkeletonBox(),
         ),
         const SizedBox(height: 14),

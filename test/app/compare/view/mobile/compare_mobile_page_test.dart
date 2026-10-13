@@ -87,6 +87,7 @@ void main() {
     final repository = FakePaddleRepository([_full])..gate = Completer<void>();
     await _pumpPage(tester, repository, ['summit']);
 
+    expect(find.byType(BottomSheet), findsOneWidget);
     expect(_inSheet(find.byType(SkeletonPulse)), findsOneWidget);
     expect(_selectPaddle, findsOneWidget);
     expect(_text('Compare'), findsOneWidget);

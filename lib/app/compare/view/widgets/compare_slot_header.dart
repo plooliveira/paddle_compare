@@ -1,18 +1,21 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/utils/price_format.dart';
-import '../../../../../core/widgets/paddle_image.dart';
-import '../../../../../data/repositories/paddle/paddle_repository.dart';
+import '../../../../core/utils/price_format.dart';
+import '../../../../core/widgets/paddle_image.dart';
+import '../../../../data/repositories/paddle/paddle_repository.dart';
+import 'compare_slot_image_box.dart';
 
 class CompareSlotHeader extends StatelessWidget {
-  const CompareSlotHeader({super.key, required this.paddle});
+  const CompareSlotHeader({
+    super.key,
+    required this.paddle,
+    this.imageMaxHeight = double.infinity,
+  });
 
-  /// The illustrations' own ratio (600×800). Every column gets the same box,
-  /// so paddles drawn to scale stay comparable side by side.
-  static const imageAspectRatio = 3 / 4;
   static const nameMaxLines = 2;
 
   final Paddle paddle;
+  final double imageMaxHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +27,8 @@ class CompareSlotHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AspectRatio(
-            aspectRatio: imageAspectRatio,
+          CompareSlotImageBox(
+            maxHeight: imageMaxHeight,
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(4)),
               child: ColoredBox(

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 
 import '../../../core/widgets/adaptive_view.dart';
 import '../controller/compare_controller.dart';
+import 'desktop/compare_desktop_page.dart';
 import 'mobile/compare_mobile_page.dart';
 
 class CompareView extends StatefulWidget {
@@ -50,8 +51,7 @@ class _CompareViewState extends State<CompareView> {
       container: _container,
       child: AdaptiveView(
         mobile: (_) => const CompareMobilePage(),
-        // TODO: desktop variant. The mobile one stands in until then.
-        desktop: (_) => const CompareMobilePage(),
+        desktop: (_) => const CompareDesktopPage(),
       ),
     );
   }

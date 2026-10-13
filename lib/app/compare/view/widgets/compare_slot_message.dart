@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import 'compare_slot_header.dart';
+import 'compare_slot_image_box.dart';
 
 class CompareSlotMessage extends StatelessWidget {
   const CompareSlotMessage({
@@ -8,18 +8,22 @@ class CompareSlotMessage extends StatelessWidget {
     required this.icon,
     required this.title,
     this.action,
+    this.imageMaxHeight = double.infinity,
   });
 
   final IconData icon;
   final String title;
   final Widget? action;
 
+  /// The message takes the place of the image, in a box of the same size.
+  final double imageMaxHeight;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return AspectRatio(
-      aspectRatio: CompareSlotHeader.imageAspectRatio,
+    return CompareSlotImageBox(
+      maxHeight: imageMaxHeight,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colors.surface,
