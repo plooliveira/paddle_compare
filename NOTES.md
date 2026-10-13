@@ -9,7 +9,7 @@ A Flutter app to browse pickleball paddles, view their specs, and compare up to 
 ```bash
 flutter pub get
 dart run build_runner build   # generates Riverpod providers
-flutter run -d chrome         # or an iOS/Android device
+flutter run --release -d chrome   # or an iOS/Android device
 ```
 
 ## How to test
