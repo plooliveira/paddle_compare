@@ -18,6 +18,11 @@ RouteBase get $catalogRoute => GoRouteData.$route(
       hasOverriddenOnExit: false,
       factory: $PaddleDetailRoute._fromState,
     ),
+    GoRouteData.$route(
+      path: 'compare',
+      hasOverriddenOnExit: false,
+      factory: $CompareRoute._fromState,
+    ),
   ],
 );
 
@@ -72,6 +77,37 @@ mixin $PaddleDetailRoute on GoRouteData {
   @override
   String get location =>
       GoRouteData.$location('/paddles/${Uri.encodeComponent(_self.id)}');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $CompareRoute on GoRouteData {
+  static CompareRoute _fromState(GoRouterState state) => CompareRoute(
+    ids:
+        state.uri.queryParametersAll['ids']?.map((e) => e).toList() ?? const [],
+  );
+
+  CompareRoute get _self => this as CompareRoute;
+
+  @override
+  String get location => GoRouteData.$location(
+    '/compare',
+    queryParams: {
+      if (!_$iterablesEqual(_self.ids, const []))
+        'ids': _self.ids.map((e) => e).toList(),
+    },
+  );
 
   @override
   void go(BuildContext context) => context.go(location);

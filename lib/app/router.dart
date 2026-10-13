@@ -5,6 +5,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/repositories/paddle/paddle_repository.dart';
 import 'catalog/controller/catalog_filter.dart';
 import 'catalog/view/catalog_view.dart';
+import 'compare/controller/compare_limits.dart';
+import 'compare/view/compare_view.dart';
 import 'paddle_detail/view/paddle_detail_view.dart';
 
 part 'router.g.dart';
@@ -23,7 +25,10 @@ GoRouter router(Ref ref) {
 /// URL never lands on the error page.
 @TypedGoRoute<CatalogRoute>(
   path: '/',
-  routes: [TypedGoRoute<PaddleDetailRoute>(path: 'paddles/:id')],
+  routes: [
+    TypedGoRoute<PaddleDetailRoute>(path: 'paddles/:id'),
+    TypedGoRoute<CompareRoute>(path: 'compare'),
+  ],
 )
 class CatalogRoute extends GoRouteData with $CatalogRoute {
   const CatalogRoute({
@@ -92,6 +97,29 @@ class PaddleDetailRoute extends GoRouteData with $PaddleDetailRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       PaddleDetailView(id: id);
+}
+
+/// Paddles side by side: `/compare?ids=a&ids=b`. Nested under the catalog,
+/// so a shared link has the catalog underneath to go back to.
+///
+/// The URL holds up to [CompareLimits.max] ids, whatever the layout shows.
+class CompareRoute extends GoRouteData with $CompareRoute {
+  const CompareRoute({this.ids = const []});
+
+  final List<String> ids;
+
+  /// [ids] trimmed, without blanks or repeats, and at most
+  /// [CompareLimits.max], so a hand-edited URL never breaks the page.
+  List<String> get paddleIds => List.unmodifiable(
+    {
+      for (final id in ids)
+        if (id.trim() case final id when id.isNotEmpty) id,
+    }.take(CompareLimits.max),
+  );
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      CompareView(ids: paddleIds);
 }
 
 /// Featured is the default, so it has no parameter.

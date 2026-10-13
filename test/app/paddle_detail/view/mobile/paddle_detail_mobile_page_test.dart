@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:paddle_compare/app/compare/view/compare_view.dart';
+import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/widgets/paddle_detail_skeleton.dart';
 import 'package:paddle_compare/app/router.dart';
 import 'package:paddle_compare/core/theme/app_theme.dart';
@@ -96,6 +98,35 @@ void main() {
     expect(find.byType(PaddleDetailSkeleton), findsNothing);
     expect(find.text('Summit Pro 16'), findsOneWidget);
     expect(_compareEnabled(tester), isTrue);
+  });
+
+  testWidgets('add to compare opens the comparison with this paddle', (
+    tester,
+  ) async {
+    // As in main.dart, so the URL shows the pushed page.
+    GoRouter.optionURLReflectsImperativeAPIs = true;
+    addTearDown(() => GoRouter.optionURLReflectsImperativeAPIs = false);
+    final router = await _pumpPage(tester, FakePaddleRepository([_full]));
+    await tester.pumpAndSettle();
+
+    await tester.tap(_compareButton);
+    await tester.pumpAndSettle();
+
+    // What the browser shows.
+    expect(
+      router.routeInformationProvider.value.uri.toString(),
+      '/compare?ids=summit',
+    );
+    expect(tester.widget<CompareView>(find.byType(CompareView)).ids, [
+      'summit',
+    ]);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompareView), findsNothing);
+    expect(find.byType(PaddleDetailView), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, '/paddles/summit');
   });
 
   testWidgets('highlights the key specs and the ratings', (tester) async {

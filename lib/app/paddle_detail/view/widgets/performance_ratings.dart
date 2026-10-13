@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/utils/missing_spec.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
-import 'missing_spec.dart';
 
 class PerformanceRatings extends StatelessWidget {
   const PerformanceRatings({super.key, required this.ratings});

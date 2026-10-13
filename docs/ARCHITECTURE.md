@@ -43,7 +43,7 @@ lib/
 │           ├── <domain>_repository_provider.dart
 │           └── models/        # Immutable models + tolerant JSON parsing for this domain
 ├── core/                      # Shared, feature-agnostic code
-│   ├── widgets/               # Common widgets (AdaptiveView, PaddleImage, empty/error states)
+│   ├── widgets/               # Common widgets (AdaptiveView, PaddleImage, FadingBackButton, skeletons, empty/error states)
 │   ├── theme/                 # AppColors, AppTheme (including page transitions)
 │   └── utils/                 # Result, FormFactor, formatUsd, spec and unit formatting, tolerant JSON readers
 └── config/                    # App configuration (e.g. simulated latency, failure rate)
@@ -108,6 +108,7 @@ config can be read by any layer
 - Controllers are scoped to their feature. Shared state across screens (e.g. the compare selection) lives in the controller of the feature that owns it and is read by others.
 - Watch the narrowest thing you need (`select`) to avoid unnecessary rebuilds.
 - A route parameter reaches controllers through a scoped provider that the feature's entry view overrides for its subtree. The controller lists it in `dependencies`, which scopes the controller to the same subtree. Examples: `catalogFilterProvider` (the filter in the catalog URL), overridden by `CatalogView`, and `paddleDetailIdProvider` (the id in `/paddles/:id`), overridden by `PaddleDetailView`. `CatalogController` watches `catalogFilterProvider.select((f) => f.toQuery())`, so a new URL reloads from the first page, while a change that doesn't alter the query (e.g. extra spaces in the search) doesn't refetch.
+- A route parameter that is a list of entities can reach the controllers as family arguments instead. `compareIdsProvider` (the ids in `/compare?ids=a&ids=b`) is scoped and overridden by `CompareView`, but it only tells the view which columns to show. Each column watches `comparePaddleControllerProvider(id)`, a family that takes no scoped dependencies. Each paddle then loads, fails and retries on its own, and a new id in the URL loads only that paddle while the others keep their state.
 - The entry view owns the child `ProviderContainer` and applies a new value after the frame, instead of using `ProviderScope(overrides:)`. `ProviderScope` updates overrides during its build, and a sheet that shares the container from outside the subtree would be marked dirty mid-build, which Flutter rejects.
 - Sheets and dialogs are routes outside the entry view's subtree, so they re-expose its scope: `UncontrolledProviderScope(container: ProviderScope.containerOf(context, listen: false), child: ...)`.
 

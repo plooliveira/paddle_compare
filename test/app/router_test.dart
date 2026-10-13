@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/catalog/controller/catalog_filter.dart';
 import 'package:paddle_compare/app/catalog/view/catalog_view.dart';
+import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/router.dart';
 import 'package:paddle_compare/core/theme/app_theme.dart';
@@ -145,6 +146,28 @@ void main() {
     });
   });
 
+  group('CompareRoute', () {
+    test('puts the ids in the query, in order', () {
+      expect(
+        const CompareRoute(ids: ['b', 'a']).location,
+        '/compare?ids=b&ids=a',
+      );
+      expect(const CompareRoute().location, '/compare');
+    });
+
+    test('trims the ids and drops blanks and repeats', () {
+      const route = CompareRoute(ids: [' a ', '', '  ', 'b', 'a']);
+
+      expect(route.paddleIds, ['a', 'b']);
+    });
+
+    test('keeps at most three ids', () {
+      const route = CompareRoute(ids: ['a', 'b', 'c', 'd']);
+
+      expect(route.paddleIds, ['a', 'b', 'c']);
+    });
+  });
+
   testWidgets('the router reads the filter from the URL', (tester) async {
     tester.view.physicalSize = const Size(375, 812) * 3;
     tester.view.devicePixelRatio = 3;
@@ -185,6 +208,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(PaddleDetailView), findsNothing);
+    expect(find.byType(CatalogView), findsOneWidget);
+    expect(router.routerDelegate.currentConfiguration.uri.path, '/');
+  });
+
+  testWidgets('a compare link has the catalog underneath to go back to', (
+    tester,
+  ) async {
+    final router = await _pumpApp(tester, '/compare?ids=summit&ids=%20summit');
+
+    expect(tester.widget<CompareView>(find.byType(CompareView)).ids, [
+      'summit',
+    ]);
+    expect(find.text('Summit Pro'), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CompareView), findsNothing);
     expect(find.byType(CatalogView), findsOneWidget);
     expect(router.routerDelegate.currentConfiguration.uri.path, '/');
   });

@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/widgets/fading_back_button.dart';
 import '../../../../core/widgets/state_message.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../../router.dart';
 import '../../controller/paddle_detail_controller.dart';
-import '../widgets/fading_back_button.dart';
 import '../widgets/full_specs_accordion.dart';
 import '../widgets/key_specs_grid.dart';
 import '../widgets/paddle_detail_header.dart';
@@ -16,10 +16,6 @@ import 'widgets/compare_bar.dart';
 
 class PaddleDetailMobilePage extends ConsumerWidget {
   const PaddleDetailMobilePage({super.key});
-
-  void _addToCompare() {
-    // TODO: toggle in the compare selection once the compare feature exists.
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,7 +43,9 @@ class PaddleDetailMobilePage extends ConsumerWidget {
       ),
       AsyncValue(value: final paddle?) => (
         _Details(paddle: paddle),
-        CompareBar(onCompare: _addToCompare),
+        CompareBar(
+          onCompare: () => CompareRoute(ids: [paddle.id]).push(context),
+        ),
       ),
       _ => (
         _Message(

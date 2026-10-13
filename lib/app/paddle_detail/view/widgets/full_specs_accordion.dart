@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/utils/missing_spec.dart';
 import '../../../../core/utils/spec_format.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
-import 'missing_spec.dart';
 
 class FullSpecsAccordion extends StatelessWidget {
   const FullSpecsAccordion({super.key, required this.paddle});

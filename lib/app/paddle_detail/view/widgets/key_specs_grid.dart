@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/utils/missing_spec.dart';
 import '../../../../core/utils/spec_format.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../../shared/paddle_labels.dart';
-import 'missing_spec.dart';
 
 class KeySpecsGrid extends StatelessWidget {
   const KeySpecsGrid({super.key, required this.paddle});
