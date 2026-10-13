@@ -17,7 +17,8 @@ class PaddleImage extends StatelessWidget {
       builder: (context, constraints) => Image.asset(
         path,
         fit: BoxFit.contain,
-        // The card describes the paddle; the illustration adds nothing.
+        // The text around it describes the paddle; the illustration adds
+        // nothing.
         excludeFromSemantics: true,
         cacheWidth: constraints.maxWidth.isFinite
             ? (constraints.maxWidth * pixelRatio).round()

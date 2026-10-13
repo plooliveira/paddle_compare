@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../router.dart';
+import '../../../../shared/paddle_labels.dart';
 import '../../../controller/catalog_controller.dart';
 import '../../../controller/catalog_filter.dart';
 import '../../widgets/catalog_labels.dart';

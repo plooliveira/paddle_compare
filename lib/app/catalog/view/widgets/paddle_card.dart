@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/utils/price_format.dart';
+import '../../../../core/widgets/paddle_image.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
-import 'paddle_image.dart';
 
 class PaddleCard extends StatelessWidget {
   const PaddleCard({

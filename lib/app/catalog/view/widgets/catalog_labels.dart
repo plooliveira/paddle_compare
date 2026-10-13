@@ -1,15 +1,6 @@
 import '../../../../data/repositories/paddle/paddle_repository.dart';
 import '../../controller/catalog_filter.dart';
 
-extension PaddleShapeLabel on PaddleShape {
-  String get label => switch (this) {
-    PaddleShape.standard => 'Standard',
-    PaddleShape.hybrid => 'Hybrid',
-    PaddleShape.elongated => 'Elongated',
-    PaddleShape.widebody => 'Widebody',
-  };
-}
-
 extension PaddleSortLabel on PaddleSort {
   String get label => switch (this) {
     PaddleSort.featured => 'Featured',

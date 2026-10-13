@@ -12,6 +12,7 @@ lib/
 ├── app/                       # App layer
 │   ├── app.dart               # MaterialApp.router
 │   ├── router.dart            # All routes (routerProvider)
+│   ├── shared/                # Presentation code used by 2+ features that depends on domain models (e.g. PaddleShapeLabel)
 │   └── <feature>/             # One folder per feature ("flow")
 │       ├── controller/
 │       │   ├── <feature>_controller.dart    # Shared by both variants
@@ -42,9 +43,9 @@ lib/
 │           ├── <domain>_repository_provider.dart
 │           └── models/        # Immutable models + tolerant JSON parsing for this domain
 ├── core/                      # Shared, feature-agnostic code
-│   ├── widgets/               # Common widgets (AdaptiveView, PaddleHero, empty/error states)
+│   ├── widgets/               # Common widgets (AdaptiveView, PaddleImage, empty/error states)
 │   ├── theme/                 # AppColors, AppTheme (including page transitions)
-│   └── utils/                 # Result, FormFactor, formatUsd
+│   └── utils/                 # Result, FormFactor, formatUsd, spec and unit formatting, tolerant JSON readers
 └── config/                    # App configuration (e.g. simulated latency, failure rate)
 ```
 
@@ -97,7 +98,8 @@ config can be read by any layer
 - Controllers depend on repository contracts, never on `data/api`.
 - Inside `data`: `repositories → api`, never the other way. Repository modules don't import each other.
 - `data` never imports `app`. `core` never imports `app` or `data`.
-- A widget used by two or more features moves from `app/<feature>/view/widgets/` to `core/widgets/`.
+- A widget used by two or more features moves from `app/<feature>/view/widgets/` to `core/widgets/`. If it depends on domain models (it takes a `Paddle`, labels a `PaddleShape`), `core` can't hold it, so it goes to `app/shared/` instead. Pure formatting (units, prices) stays in `core/utils/`.
+- `app/shared/` imports `data` and `core`, never a feature folder.
 
 ## Riverpod
 
