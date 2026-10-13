@@ -5,55 +5,37 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/catalog/view/desktop/catalog_desktop_page.dart';
 import 'package:paddle_compare/app/catalog/view/mobile/catalog_mobile_page.dart';
-import 'package:paddle_compare/app/compare/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card_skeleton.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 
-import '../../../../helpers/catalog_pages.dart';
 import '../../../../helpers/fake_paddle_repository.dart';
+import '../../../../helpers/finders.dart';
+import '../../../../helpers/paddles.dart';
+import '../../../../helpers/pump_app.dart';
 import '../../../../helpers/url_reports.dart';
-
-const _desktop = Size(1280, 800);
 
 Future<GoRouter> _pumpPage(
   WidgetTester tester,
   FakePaddleRepository repository, {
   String location = '/',
-}) => pumpCatalogPage(
+  Size size = desktop,
+}) => pumpApp(
   tester,
   repository,
   location: location,
-  size: _desktop,
+  size: size,
   devicePixelRatio: 1,
 );
 
-Uri _url(GoRouter router) => router.routerDelegate.currentConfiguration.uri;
+Uri _url(GoRouter router) => Uri.parse(currentUrl(router));
 
 String _searchText(WidgetTester tester) =>
     tester.widget<TextField>(find.byType(TextField)).controller!.text;
 
-Finder _inTray(Finder finder) =>
-    find.descendant(of: find.byType(CompareTray), matching: finder);
-
-Finder _inComparison(Finder finder) =>
-    find.descendant(of: find.byType(CompareView), matching: finder);
-
-Finder _cardButton(String name, String label) => find.descendant(
-  of: find.widgetWithText(PaddleCard, name),
-  matching: find.text(label),
-);
-
 bool _cardButtonEnabled(WidgetTester tester, String name, String label) =>
-    tester
-        .widget<OutlinedButton>(
-          find.ancestor(
-            of: _cardButton(name, label),
-            matching: find.bySubtype<OutlinedButton>(),
-          ),
-        )
-        .enabled;
+    isEnabled(tester, cardButton(name, label));
 
 /// Centers the button labeled [label] on the card showing [name]. A whole
 /// card can be taller than the grid's viewport.
@@ -189,13 +171,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(_inTray(find.text('Paddle 0')), findsOneWidget);
-    expect(_inTray(find.text('Paddle 1')), findsOneWidget);
-    expect(_inTray(find.text('Add a paddle')), findsOneWidget);
+    expect(inTray(find.text('Paddle 0')), findsOneWidget);
+    expect(inTray(find.text('Paddle 1')), findsOneWidget);
+    expect(inTray(find.text('Add a paddle')), findsOneWidget);
     expect(_cardButtonEnabled(tester, 'Paddle 2', 'Compare'), isTrue);
 
     await _scrollTo(tester, 'Paddle 2', 'Compare');
-    await tester.tap(_cardButton('Paddle 2', 'Compare'));
+    await tester.tap(cardButton('Paddle 2', 'Compare'));
     await tester.pumpAndSettle();
 
     expect(
@@ -206,73 +188,36 @@ void main() {
     expect(find.byType(CompareView), findsOneWidget);
     expect(find.byType(BottomSheet), findsNothing);
     for (final name in ['Paddle 0', 'Paddle 1', 'Paddle 2']) {
-      expect(_inComparison(find.text(name)), findsOneWidget);
+      expect(inComparison(find.text(name)), findsOneWidget);
     }
 
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
 
-    expect(_inTray(find.text('Paddle 2')), findsOneWidget);
-    expect(_inTray(find.text('Add a paddle')), findsNothing);
+    expect(inTray(find.text('Paddle 2')), findsOneWidget);
+    expect(inTray(find.text('Add a paddle')), findsNothing);
     expect(_cardButtonEnabled(tester, 'Paddle 2', 'Added'), isFalse);
     await _scrollTo(tester, 'Paddle 3', 'Compare');
     expect(_cardButtonEnabled(tester, 'Paddle 3', 'Compare'), isFalse);
     expect(repository.ids, ['p0', 'p1', 'p2']);
   });
 
-  testWidgets('shows an error with a retry that reloads', (tester) async {
-    final repository = FakePaddleRepository(catalogPaddles(5))
-      ..error = const PaddleRepositoryException('down');
-    await _pumpPage(tester, repository);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Something went wrong'), findsOneWidget);
-
-    repository.error = null;
-    await tester.tap(find.text('Try again'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Something went wrong'), findsNothing);
-    expect(find.text('Paddle 0'), findsOneWidget);
-  });
-
-  testWidgets('the empty state clears the filters and the search field', (
-    tester,
-  ) async {
-    final router = await _pumpPage(
-      tester,
-      FakePaddleRepository(catalogPaddles(5)),
-      location: '/?q=nothing%20like%20this&shape=hybrid',
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('No paddles found'), findsOneWidget);
-
-    await tester.tap(find.text('Clear filters'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Paddle 0'), findsOneWidget);
-    expect(_searchText(tester), isEmpty);
-    expect(_url(router).toString(), '/');
-  });
-
   testWidgets('fits at the narrowest desktop width, in a short window', (
     tester,
   ) async {
     // Any overflow fails the test.
-    await pumpCatalogPage(
+    await _pumpPage(
       tester,
       FakePaddleRepository(catalogPaddles(9)),
       location: '/?sort=power&in-stock=true&compare=p0&compare=p1&compare=p2',
       size: const Size(840, 560),
-      devicePixelRatio: 1,
     );
     await tester.pumpAndSettle();
 
     expect(find.byType(CatalogDesktopPage), findsOneWidget);
     expect(find.text('Sort: Power: High to Low'), findsOneWidget);
     expect(find.byType(PaddleCard), findsWidgets);
-    expect(_inTray(find.text('Paddle 2')), findsOneWidget);
+    expect(inTray(find.text('Paddle 2')), findsOneWidget);
   });
 
   testWidgets('a resize to a phone swaps the layout and keeps the state', (
@@ -295,7 +240,7 @@ void main() {
       'shape': ['hybrid'],
     });
 
-    tester.view.physicalSize = const Size(375, 812);
+    resize(tester, phone);
     await tester.pumpAndSettle();
 
     expect(find.byType(CatalogDesktopPage), findsNothing);

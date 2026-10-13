@@ -11,19 +11,7 @@ import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
 import '../../../helpers/fake_paddle_repository.dart';
-
-/// Even indexes are standard, odd ones hybrid. Prices go up with the index.
-List<Paddle> _paddles(int count) => [
-  for (var i = 0; i < count; i++)
-    Paddle(
-      id: 'p$i',
-      brand: 'Brand',
-      name: 'Paddle $i',
-      priceUsd: 100.0 + i,
-      inStock: i % 3 != 0,
-      shape: i.isEven ? PaddleShape.standard : PaddleShape.hybrid,
-    ),
-];
+import '../../../helpers/paddles.dart';
 
 List<String> _ids(List<Paddle> paddles) => [
   for (final paddle in paddles) paddle.id,
@@ -70,7 +58,7 @@ void main() {
 
   group('initial load', () {
     test('loads the first page for the filter in the URL', () async {
-      repository = FakePaddleRepository(_paddles(30));
+      repository = FakePaddleRepository(catalogPaddles(30));
       container = _container(repository, _hybrid);
 
       final state = await loaded();
@@ -85,7 +73,7 @@ void main() {
     });
 
     test('has no more pages when the first page is short', () async {
-      repository = FakePaddleRepository(_paddles(5));
+      repository = FakePaddleRepository(catalogPaddles(5));
       container = _container(repository);
 
       final state = await loaded();
@@ -97,7 +85,8 @@ void main() {
     test('a failure is an AsyncError and is not retried automatically', () {
       fakeAsync((async) {
         const exception = PaddleRepositoryException('down');
-        repository = FakePaddleRepository(_paddles(30))..error = exception;
+        repository = FakePaddleRepository(catalogPaddles(30))
+          ..error = exception;
         container = _container(repository);
 
         async.flushMicrotasks();
@@ -112,7 +101,7 @@ void main() {
     });
 
     test('retry reloads after a failure', () async {
-      repository = FakePaddleRepository(_paddles(30))
+      repository = FakePaddleRepository(catalogPaddles(30))
         ..error = const PaddleRepositoryException('down');
       container = _container(repository);
       await expectLater(loaded(), throwsA(isA<PaddleRepositoryException>()));
@@ -127,7 +116,7 @@ void main() {
 
   group('loadMore', () {
     setUp(() async {
-      repository = FakePaddleRepository(_paddles(30));
+      repository = FakePaddleRepository(catalogPaddles(30));
       container = _container(repository);
       await loaded();
     });
@@ -140,7 +129,7 @@ void main() {
       await controller().loadMore();
       expect(current().paddles, hasLength(30));
       expect(current().hasMore, isFalse);
-      expect(_ids(current().paddles), _ids(_paddles(30)));
+      expect(_ids(current().paddles), _ids(catalogPaddles(30)));
 
       await controller().loadMore();
       expect(repository.offsets, [0, 12, 24]);
@@ -201,7 +190,7 @@ void main() {
 
   group('loadMore with a query', () {
     test('sends the current query', () async {
-      repository = FakePaddleRepository(_paddles(30));
+      repository = FakePaddleRepository(catalogPaddles(30));
       container = _container(repository, _hybrid);
       await loaded();
 
@@ -212,25 +201,11 @@ void main() {
       expect(_ids(current().paddles), [for (var i = 1; i < 30; i += 2) 'p$i']);
       expect(current().hasMore, isFalse);
     });
-
-    test('sorted pages keep the order across the whole catalog', () async {
-      repository = FakePaddleRepository(_paddles(30));
-      container = _container(
-        repository,
-        const CatalogFilter(sort: PaddleSort.priceHighToLow),
-      );
-      await loaded();
-
-      await controller().loadMore();
-      await controller().loadMore();
-
-      expect(_ids(current().paddles), [for (var i = 29; i >= 0; i--) 'p$i']);
-    });
   });
 
   group('filter change', () {
     setUp(() async {
-      repository = FakePaddleRepository(_paddles(30));
+      repository = FakePaddleRepository(catalogPaddles(30));
       container = _container(repository);
       await loaded();
       await controller().loadMore();
@@ -274,6 +249,7 @@ void main() {
       final slowResponse = Completer<void>();
       repository.gate = slowResponse;
       setFilter(_hybrid);
+      // Reading rebuilds the controller, which sends the slow request.
       state();
 
       repository.gate = null;

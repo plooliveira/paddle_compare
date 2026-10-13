@@ -154,3 +154,5 @@ config can be read by any layer
 Test doubles for a contract (stub API, fake repository) live in the test file that uses them. Move one to a shared helper only when a second test file needs it.
 
 `test/helpers/fake_paddle_repository.dart` serves its `Paddle`s through the real `PaddleRepositoryFromFake` over an `InMemoryPaddleApi` (it turns them back into JSON), so controller and view tests run queries exactly like the app, with no latency, instead of duplicating the filter logic.
+
+View tests pump the whole app with `pumpApp` (`test/helpers/pump_app.dart`), set up like `main.dart` (`GoRouter.optionURLReflectsImperativeAPIs` on), and navigate by tapping, not by calling route methods. A widget shared by the mobile and desktop variants is tested once; each variant's test covers only what that variant adds.

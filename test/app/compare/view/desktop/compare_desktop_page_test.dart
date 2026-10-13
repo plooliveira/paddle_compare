@@ -1,18 +1,14 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/compare/view/desktop/compare_desktop_page.dart';
 import 'package:paddle_compare/app/compare/view/mobile/compare_mobile_page.dart';
-import 'package:paddle_compare/app/router.dart';
-import 'package:paddle_compare/core/theme/app_theme.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
-import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
 import '../../../../helpers/fake_paddle_repository.dart';
-
-const _desktop = Size(1280, 800);
+import '../../../../helpers/finders.dart';
+import '../../../../helpers/pump_app.dart';
 
 const _summit = Paddle(
   id: 'summit',
@@ -40,44 +36,25 @@ const _rally = Paddle(
   ratings: PaddleRatings(),
 );
 
-void _setSize(WidgetTester tester, Size size) {
-  tester.view.physicalSize = size;
-  tester.view.devicePixelRatio = 1;
-}
-
 /// Opens `/compare` with [query], over the catalog.
 Future<GoRouter> _pumpPage(
   WidgetTester tester,
   FakePaddleRepository repository,
   Map<String, Object> query, {
-  Size size = _desktop,
+  Size size = desktop,
 }) async {
-  _setSize(tester, size);
-  addTearDown(tester.view.reset);
-  final router = GoRouter(
-    routes: $appRoutes,
-    initialLocation: Uri(
-      path: const CompareRoute().location,
-      queryParameters: query,
-    ).toString(),
-  );
-  addTearDown(router.dispose);
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [paddleRepositoryProvider.overrideWithValue(repository)],
-      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
-    ),
+  final router = await pumpApp(
+    tester,
+    repository,
+    location: Uri(path: '/compare', queryParameters: query).toString(),
+    size: size,
+    devicePixelRatio: 1,
   );
   await tester.pumpAndSettle();
   return router;
 }
 
-/// Only in the comparison: the catalog underneath shows the paddles too.
-Finder _text(String text) =>
-    find.descendant(of: find.byType(CompareView), matching: find.text(text));
-
-String _url(GoRouter router) =>
-    router.routerDelegate.currentConfiguration.uri.toString();
+Finder _text(String text) => inComparison(find.text(text));
 
 void main() {
   testWidgets('is a page of its own, with three paddles side by side', (
@@ -141,7 +118,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CompareView), findsNothing);
-    expect(_url(router), '/?shape=hybrid&compare=summit');
+    expect(currentUrl(router), '/?shape=hybrid&compare=summit');
   });
 
   testWidgets('the back button goes back to the catalog, keeping its query', (
@@ -156,7 +133,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CompareView), findsNothing);
-    expect(_url(router), '/?q=apex&compare=summit');
+    expect(currentUrl(router), '/?q=apex&compare=summit');
   });
 
   testWidgets('a column that fails retries on its own; an unknown id says so', (
@@ -191,7 +168,6 @@ void main() {
       'compare': ['summit', 'volt', 'rally'],
     }, size: const Size(840, 560));
 
-    expect(tester.takeException(), isNull);
     // The images leave room for the first specs.
     expect(tester.getBottomLeft(_text('Elongated')).dy, lessThan(560));
   });
@@ -202,26 +178,26 @@ void main() {
     final repository = FakePaddleRepository([_summit, _volt, _rally]);
     final router = await _pumpPage(tester, repository, {
       'compare': ['summit', 'volt', 'rally'],
-    }, size: const Size(375, 812));
+    }, size: phone);
     const url = '/compare?compare=summit&compare=volt&compare=rally';
 
     expect(find.byType(BottomSheet), findsOneWidget);
     expect(find.byType(CompareMobilePage), findsOneWidget);
 
-    _setSize(tester, _desktop);
+    resize(tester, desktop);
     await tester.pumpAndSettle();
 
     expect(find.byType(BottomSheet), findsNothing);
     expect(find.byType(CompareDesktopPage), findsOneWidget);
     expect(_text('Rally'), findsOneWidget);
-    expect(_url(router), url);
+    expect(currentUrl(router), url);
 
-    _setSize(tester, const Size(375, 812));
+    resize(tester, phone);
     await tester.pumpAndSettle();
 
     expect(find.byType(BottomSheet), findsOneWidget);
     expect(find.byType(CompareMobilePage), findsOneWidget);
-    expect(_url(router), url);
+    expect(currentUrl(router), url);
     // The paddles were loaded once, whatever showed them.
     expect(repository.ids, ['summit', 'volt', 'rally']);
   });

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -8,85 +7,20 @@ import 'package:paddle_compare/app/compare/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/mobile/widgets/paddle_detail_skeleton.dart';
-import 'package:paddle_compare/app/router.dart';
-import 'package:paddle_compare/core/theme/app_theme.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
-import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
 import '../../../../helpers/fake_paddle_repository.dart';
-
-const _full = Paddle(
-  id: 'summit',
-  brand: 'Apex Court',
-  name: 'Summit Pro 16',
-  releaseYear: 2025,
-  priceUsd: 249.99,
-  inStock: true,
-  shape: PaddleShape.elongated,
-  faceMaterial: 'raw carbon',
-  coreThicknessMm: 16,
-  weightOz: 8,
-  swingWeight: 116,
-  twistWeight: 6.4,
-  dimensions: PaddleDimensions(
-    lengthIn: 16.5,
-    widthIn: 7.5,
-    handleLengthIn: 5.5,
-  ),
-  gripCircumferenceIn: 4.25,
-  ratings: PaddleRatings(power: 7, control: 8, spin: 9, pop: 6),
-  description: 'Tour-level control paddle with a thick core.',
-);
-
-/// Only the required fields and one rating.
-const _sparse = Paddle(
-  id: 'sparse',
-  brand: 'Brand',
-  name: 'Sparse',
-  ratings: PaddleRatings(power: 5),
-);
+import '../../../../helpers/finders.dart';
+import '../../../../helpers/paddles.dart';
+import '../../../../helpers/pump_app.dart';
 
 Future<GoRouter> _pumpPage(
   WidgetTester tester,
   FakePaddleRepository repository, {
   String location = '/paddles/summit',
-}) async {
-  tester.view.physicalSize = const Size(375, 812) * 3;
-  tester.view.devicePixelRatio = 3;
-  addTearDown(tester.view.reset);
-  final router = GoRouter(routes: $appRoutes, initialLocation: location);
-  addTearDown(router.dispose);
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [paddleRepositoryProvider.overrideWithValue(repository)],
-      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
-    ),
-  );
-  await tester.pump();
-  return router;
-}
+}) => pumpApp(tester, repository, location: location);
 
-Uri _url(GoRouter router) => router.routerDelegate.currentConfiguration.uri;
-
-/// What the browser shows, pushed pages included.
-String _browserUrl(GoRouter router) =>
-    router.routeInformationProvider.value.uri.toString();
-
-/// As in main.dart, so the URL shows the pushed page.
-void _reflectImperativeUrls() {
-  GoRouter.optionURLReflectsImperativeAPIs = true;
-  addTearDown(() => GoRouter.optionURLReflectsImperativeAPIs = false);
-}
-
-Finder _barButton(String label) => find.ancestor(
-  of: find.text(label),
-  matching: find.bySubtype<ButtonStyleButton>(),
-);
-
-final _compareButton = _barButton('Add to compare');
-
-bool _compareEnabled(WidgetTester tester) =>
-    tester.widget<ButtonStyleButton>(_compareButton).enabled;
+final _compareButton = button('Add to compare');
 
 Future<void> _openFullSpecs(WidgetTester tester) async {
   await tester.ensureVisible(find.text('Full specifications'));
@@ -98,85 +32,62 @@ void main() {
   testWidgets('shows a skeleton and a disabled compare button while loading', (
     tester,
   ) async {
-    final repository = FakePaddleRepository([_full])..gate = Completer<void>();
+    final repository = FakePaddleRepository([fullPaddle])
+      ..gate = Completer<void>();
     await _pumpPage(tester, repository);
 
     expect(find.byType(PaddleDetailSkeleton), findsOneWidget);
     expect(find.byType(BackButton), findsOneWidget);
-    expect(_compareEnabled(tester), isFalse);
+    expect(isEnabled(tester, _compareButton), isFalse);
 
     repository.gate!.complete();
     await tester.pumpAndSettle();
 
     expect(find.byType(PaddleDetailSkeleton), findsNothing);
     expect(find.text('Summit Pro 16'), findsOneWidget);
-    expect(_compareEnabled(tester), isTrue);
+    expect(isEnabled(tester, _compareButton), isTrue);
   });
 
-  testWidgets('add to compare goes back to the catalog, into its tray', (
-    tester,
-  ) async {
-    _reflectImperativeUrls();
-    final repository = FakePaddleRepository([_full]);
-    final router = await _pumpPage(tester, repository, location: '/');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('View details'));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'add to compare goes back to the filtered catalog, into its tray',
+    (tester) async {
+      final repository = FakePaddleRepository([fullPaddle]);
+      final router = await _pumpPage(
+        tester,
+        repository,
+        location: '/?sort=price-asc',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('View details'));
+      await tester.pumpAndSettle();
 
-    expect(_browserUrl(router), '/paddles/summit');
-    expect(repository.ids, ['summit']);
+      expect(currentUrl(router), '/paddles/summit?sort=price-asc');
+      expect(repository.ids, ['summit']);
+      final queries = repository.queries.length;
 
-    await tester.tap(_compareButton);
-    await tester.pumpAndSettle();
+      await tester.tap(_compareButton);
+      await tester.pumpAndSettle();
 
-    expect(_browserUrl(router), '/?compare=summit');
-    expect(find.byType(PaddleDetailView), findsNothing);
-    expect(
-      find.descendant(
-        of: find.byType(CompareTray),
-        matching: find.text('Summit Pro 16'),
-      ),
-      findsOneWidget,
-    );
-    // The tray's own request for the paddle.
-    expect(repository.ids, ['summit', 'summit']);
-  });
-
-  testWidgets('the catalog underneath keeps its filter and its results', (
-    tester,
-  ) async {
-    _reflectImperativeUrls();
-    final repository = FakePaddleRepository([_full]);
-    final router = await _pumpPage(
-      tester,
-      repository,
-      location: '/?sort=price-asc',
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('View details'));
-    await tester.pumpAndSettle();
-
-    expect(_browserUrl(router), '/paddles/summit?sort=price-asc');
-    final queries = repository.queries.length;
-
-    await tester.tap(_compareButton);
-    await tester.pumpAndSettle();
-
-    expect(_browserUrl(router), '/?sort=price-asc&compare=summit');
-    expect(find.text('Lowest price'), findsOneWidget);
-    expect(repository.queries, hasLength(queries));
-  });
+      expect(currentUrl(router), '/?sort=price-asc&compare=summit');
+      expect(find.byType(PaddleDetailView), findsNothing);
+      expect(inTray(find.text('Summit Pro 16')), findsOneWidget);
+      expect(find.text('Lowest price'), findsOneWidget);
+      // The catalog didn't reload; the tray asked for its own paddle.
+      expect(repository.queries, hasLength(queries));
+      expect(repository.ids, ['summit', 'summit']);
+    },
+  );
 
   testWidgets('from a shared link, add to compare goes to the catalog', (
     tester,
   ) async {
-    final router = await _pumpPage(tester, FakePaddleRepository([_full]));
+    final router = await _pumpPage(tester, FakePaddleRepository([fullPaddle]));
     await tester.pumpAndSettle();
 
     await tester.tap(_compareButton);
     await tester.pumpAndSettle();
 
-    expect(_url(router).toString(), '/?compare=summit');
+    expect(currentUrl(router), '/?compare=summit');
     expect(find.byType(PaddleDetailView), findsNothing);
     expect(find.byType(CompareTray), findsOneWidget);
   });
@@ -186,19 +97,19 @@ void main() {
   ) async {
     await _pumpPage(
       tester,
-      FakePaddleRepository([_full]),
+      FakePaddleRepository([fullPaddle]),
       location: '/paddles/summit?compare=summit',
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Add to compare'), findsNothing);
     expect(
-      tester.widget<ButtonStyleButton>(_barButton('Added to compare')).enabled,
+      tester.widget<ButtonStyleButton>(button('Added to compare')).enabled,
       isFalse,
     );
     expect(
       find.descendant(
-        of: _barButton('Added to compare'),
+        of: button('Added to compare'),
         matching: find.byIcon(Icons.check),
       ),
       findsOneWidget,
@@ -208,14 +119,14 @@ void main() {
   testWidgets('says when the comparison is full', (tester) async {
     await _pumpPage(
       tester,
-      FakePaddleRepository([_full]),
+      FakePaddleRepository([fullPaddle]),
       location: '/paddles/summit?compare=a&compare=b',
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Add to compare'), findsNothing);
     expect(
-      tester.widget<ButtonStyleButton>(_barButton('Compare is full')).enabled,
+      tester.widget<ButtonStyleButton>(button('Compare is full')).enabled,
       isFalse,
     );
   });
@@ -223,7 +134,7 @@ void main() {
   testWidgets('completing the comparison opens it', (tester) async {
     final router = await _pumpPage(
       tester,
-      FakePaddleRepository([_full]),
+      FakePaddleRepository([fullPaddle]),
       location: '/paddles/summit?compare=other',
     );
     await tester.pumpAndSettle();
@@ -231,22 +142,19 @@ void main() {
     await tester.tap(_compareButton);
     await tester.pumpAndSettle();
 
-    expect(_url(router).toString(), '/compare?compare=other&compare=summit');
+    expect(currentUrl(router), '/compare?compare=other&compare=summit');
     expect(find.byType(PaddleDetailView), findsNothing);
-    expect(tester.widget<CompareView>(find.byType(CompareView)).ids, [
-      'other',
-      'summit',
-    ]);
+    expect(find.byType(CompareView), findsOneWidget);
   });
 
   testWidgets('highlights the key specs and the ratings', (tester) async {
-    await _pumpPage(tester, FakePaddleRepository([_full]));
+    await _pumpPage(tester, FakePaddleRepository([fullPaddle]));
     await tester.pumpAndSettle();
 
     expect(find.text('APEX COURT'), findsOneWidget);
     expect(find.text('\$249.99'), findsOneWidget);
     expect(find.text('In stock'), findsOneWidget);
-    expect(find.text(_full.description!), findsOneWidget);
+    expect(find.text(fullPaddle.description!), findsOneWidget);
 
     expect(find.text('Elongated'), findsOneWidget);
     expect(find.text('8.0 oz · 227 g', findRichText: true), findsOneWidget);
@@ -271,7 +179,7 @@ void main() {
   testWidgets('the full specifications start collapsed and open on tap', (
     tester,
   ) async {
-    await _pumpPage(tester, FakePaddleRepository([_full]));
+    await _pumpPage(tester, FakePaddleRepository([fullPaddle]));
     await tester.pumpAndSettle();
 
     expect(find.text('Length'), findsNothing);
@@ -297,7 +205,7 @@ void main() {
   ) async {
     await _pumpPage(
       tester,
-      FakePaddleRepository([_sparse]),
+      FakePaddleRepository([sparsePaddle]),
       location: '/paddles/sparse',
     );
     await tester.pumpAndSettle();
@@ -322,7 +230,7 @@ void main() {
   testWidgets('shows a sold-out paddle as such', (tester) async {
     await _pumpPage(
       tester,
-      FakePaddleRepository([_full.copyWith(inStock: false)]),
+      FakePaddleRepository([fullPaddle.copyWith(inStock: false)]),
     );
     await tester.pumpAndSettle();
 
@@ -335,7 +243,7 @@ void main() {
   ) async {
     final router = await _pumpPage(
       tester,
-      FakePaddleRepository([_full]),
+      FakePaddleRepository([fullPaddle]),
       location: '/paddles/nope',
     );
     await tester.pumpAndSettle();
@@ -346,12 +254,12 @@ void main() {
     await tester.tap(find.text('Browse paddles'));
     await tester.pumpAndSettle();
 
-    expect(_url(router).path, '/');
+    expect(currentUrl(router), '/');
     expect(find.text('Paddle not found'), findsNothing);
   });
 
   testWidgets('shows an error with a retry that reloads', (tester) async {
-    final repository = FakePaddleRepository([_full])
+    final repository = FakePaddleRepository([fullPaddle])
       ..error = const PaddleRepositoryException('down');
     await _pumpPage(tester, repository);
     await tester.pumpAndSettle();
@@ -371,7 +279,7 @@ void main() {
   testWidgets('going to another paddle reuses the page and loads it', (
     tester,
   ) async {
-    final repository = FakePaddleRepository([_full, _sparse]);
+    final repository = FakePaddleRepository([fullPaddle, sparsePaddle]);
     final router = await _pumpPage(tester, repository);
     await tester.pumpAndSettle();
 

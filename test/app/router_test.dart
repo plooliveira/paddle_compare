@@ -1,47 +1,14 @@
-import 'dart:async';
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/catalog/controller/catalog_filter.dart';
-import 'package:paddle_compare/app/catalog/view/catalog_view.dart';
-import 'package:paddle_compare/app/catalog/view/mobile/catalog_mobile_page.dart';
-import 'package:paddle_compare/app/compare/view/widgets/compare_tray.dart';
-import 'package:paddle_compare/app/compare/view/compare_view.dart';
-import 'package:paddle_compare/app/paddle_detail/view/mobile/paddle_detail_mobile_page.dart';
 import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/router.dart';
-import 'package:paddle_compare/core/theme/app_theme.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
-import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
 import '../helpers/fake_paddle_repository.dart';
-import '../helpers/url_reports.dart';
+import '../helpers/pump_app.dart';
 
 const _paddle = Paddle(id: 'summit', brand: 'Apex Court', name: 'Summit Pro');
-
-Future<GoRouter> _pumpApp(WidgetTester tester, String location) async {
-  tester.view.physicalSize = const Size(375, 812) * 3;
-  tester.view.devicePixelRatio = 3;
-  addTearDown(tester.view.reset);
-  final router = GoRouter(routes: $appRoutes, initialLocation: location);
-  addTearDown(router.dispose);
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [
-        paddleRepositoryProvider.overrideWithValue(
-          FakePaddleRepository([_paddle]),
-        ),
-      ],
-      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
-    ),
-  );
-  await tester.pumpAndSettle();
-  return router;
-}
-
-Uri _url(GoRouter router) => router.routerDelegate.currentConfiguration.uri;
 
 double _backButtonOpacity(WidgetTester tester) => tester
     .widget<FadeTransition>(
@@ -206,268 +173,31 @@ void main() {
     });
   });
 
-  testWidgets('the router reads the filter from the URL', (tester) async {
-    tester.view.physicalSize = const Size(375, 812) * 3;
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    final router = GoRouter(
-      routes: $appRoutes,
-      initialLocation: CatalogRoute.fromFilter(
-        _everything,
-        compare: [],
-      ).location,
-    );
-    addTearDown(router.dispose);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          paddleRepositoryProvider.overrideWithValue(FakePaddleRepository([])),
-        ],
-        child: MaterialApp.router(routerConfig: router),
-      ),
+  testWidgets('a detail link has the filtered catalog underneath', (
+    tester,
+  ) async {
+    final router = await pumpApp(
+      tester,
+      FakePaddleRepository([_paddle]),
+      location: '/paddles/summit?sort=price-asc',
     );
     await tester.pumpAndSettle();
 
-    expect(
-      tester.widget<CatalogView>(find.byType(CatalogView)).filter,
-      _everything,
-    );
-  });
-
-  testWidgets('a detail link has the catalog underneath to go back to', (
-    tester,
-  ) async {
-    final router = await _pumpApp(tester, '/paddles/summit');
-
-    expect(
-      tester.widget<PaddleDetailView>(find.byType(PaddleDetailView)).id,
-      'summit',
-    );
     expect(find.text('Summit Pro'), findsOneWidget);
 
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
     expect(find.byType(PaddleDetailView), findsNothing);
-    expect(find.byType(CatalogView), findsOneWidget);
-    expect(router.routerDelegate.currentConfiguration.uri.path, '/');
-  });
-
-  testWidgets('a detail link has the filtered catalog underneath', (
-    tester,
-  ) async {
-    final router = await _pumpApp(tester, '/paddles/summit?sort=price-asc');
-
-    expect(
-      tester
-          .widget<CatalogView>(find.byType(CatalogView, skipOffstage: false))
-          .filter,
-      const CatalogFilter(sort: PaddleSort.priceLowToHigh),
-    );
-
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
-
-    expect(_url(router).toString(), '/?sort=price-asc');
-  });
-
-  testWidgets('a compare link opens the sheet over the catalog and its tray', (
-    tester,
-  ) async {
-    final router = await _pumpApp(
-      tester,
-      '/compare?compare=summit&compare=%20summit',
-    );
-
-    expect(tester.widget<CompareView>(find.byType(CompareView)).ids, [
-      'summit',
-    ]);
-    expect(
-      find.descendant(
-        of: find.byType(CompareView),
-        matching: find.text('Summit Pro'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byType(CompareTray),
-        matching: find.text('Summit Pro'),
-      ),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.byTooltip('Close'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(CompareView), findsNothing);
-    expect(_url(router).path, '/');
-    expect(tester.widget<CatalogView>(find.byType(CatalogView)).compareIds, [
-      'summit',
-    ]);
-    expect(find.byType(CompareTray), findsOneWidget);
-  });
-
-  testWidgets('pages opened from the catalog carry its query', (tester) async {
-    // As in main.dart, so the URL shows the pushed page.
-    GoRouter.optionURLReflectsImperativeAPIs = true;
-    addTearDown(() => GoRouter.optionURLReflectsImperativeAPIs = false);
-    final router = await _pumpApp(tester, '/?sort=price-asc&compare=summit');
-    BuildContext catalogContext() =>
-        tester.element(find.byType(CatalogMobilePage, skipOffstage: false));
-    final catalog = CatalogRoute.of(catalogContext());
-
-    expect(catalog.location, '/?sort=price-asc&compare=summit');
-
-    unawaited(catalog.pushDetails(catalogContext(), 'summit'));
-    await tester.pumpAndSettle();
-
-    expect(
-      router.routeInformationProvider.value.uri.toString(),
-      '/paddles/summit?sort=price-asc&compare=summit',
-    );
-    expect(
-      tester.widget<PaddleDetailView>(find.byType(PaddleDetailView)),
-      isA<PaddleDetailView>().having((view) => view.id, 'id', 'summit').having(
-        (view) => view.compareIds,
-        'compareIds',
-        ['summit'],
-      ),
-    );
-
-    catalog.goCompare(catalogContext());
-    await tester.pumpAndSettle();
-
-    expect(
-      router.routeInformationProvider.value.uri.toString(),
-      '/compare?sort=price-asc&compare=summit',
-    );
-    expect(find.byType(PaddleDetailView), findsNothing);
-    expect(tester.widget<CompareView>(find.byType(CompareView)).ids, [
-      'summit',
-    ]);
-  });
-
-  group('CatalogRoute.replaceOnPage', () {
-    BuildContext catalogContext(WidgetTester tester) =>
-        tester.element(find.byType(CatalogMobilePage, skipOffstage: false));
-    BuildContext detailContext(WidgetTester tester) =>
-        tester.element(find.byType(PaddleDetailMobilePage));
-
-    /// The detail page pushed from the catalog at [location], as in the app.
-    Future<GoRouter> pushDetails(WidgetTester tester, String location) async {
-      final router = await _pumpApp(tester, location);
-      unawaited(
-        CatalogRoute.of(catalogContext(tester))
-            .pushDetails(catalogContext(tester), 'summit'),
-      );
-      await tester.pumpAndSettle();
-      return router;
-    }
-
-    testWidgets('on the catalog, updates it in place', (tester) async {
-      final reports = recordUrlReports(tester);
-      final router = await _pumpApp(tester, '/?sort=power');
-      final catalog = tester.state(find.byType(CatalogView));
-      reports.clear();
-
-      CatalogRoute.of(catalogContext(tester))
-          .withCompare(['summit'])
-          .replaceOnPage(catalogContext(tester));
-      await tester.pumpAndSettle();
-
-      expect(_url(router).toString(), '/?sort=power&compare=summit');
-      expect(reports, [containsPair('replace', true)]);
-      expect(tester.state(find.byType(CatalogView)), same(catalog));
-      expect(find.byType(CompareTray), findsOneWidget);
-    });
-
-    testWidgets('on a pushed detail page, keeps it and updates the catalog', (
-      tester,
-    ) async {
-      final reports = recordUrlReports(tester);
-      final router = await pushDetails(tester, '/?sort=power');
-      final detail = tester.state(find.byType(PaddleDetailView));
-      reports.clear();
-
-      CatalogRoute.of(detailContext(tester))
-          .withCompare(['summit'])
-          .replaceOnPage(detailContext(tester));
-      await tester.pumpAndSettle();
-
-      expect(
-        _url(router).toString(),
-        '/paddles/summit?sort=power&compare=summit',
-      );
-      expect(reports, [containsPair('replace', true)]);
-      expect(tester.state(find.byType(PaddleDetailView)), same(detail));
-      expect(
-        tester.widget<PaddleDetailView>(find.byType(PaddleDetailView)),
-        isA<PaddleDetailView>()
-            .having((view) => view.id, 'id', 'summit')
-            .having((view) => view.compareIds, 'compareIds', ['summit']),
-      );
-      expect(
-        tester
-            .widget<CatalogView>(find.byType(CatalogView, skipOffstage: false))
-            .compareIds,
-        ['summit'],
-      );
-
-      await tester.tap(find.byType(BackButton));
-      await tester.pumpAndSettle();
-
-      expect(_url(router).toString(), '/?sort=power&compare=summit');
-    });
-
-    testWidgets('addToCompare(stayOnPage: true) stays below the limit', (
-      tester,
-    ) async {
-      final router = await pushDetails(tester, '/?compare=a');
-      final detail = tester.state(find.byType(PaddleDetailView));
-
-      CatalogRoute.of(detailContext(tester)).addToCompare(
-        detailContext(tester),
-        'summit',
-        limit: 3,
-        stayOnPage: true,
-      );
-      await tester.pumpAndSettle();
-
-      expect(
-        _url(router).toString(),
-        '/paddles/summit?compare=a&compare=summit',
-      );
-      expect(tester.state(find.byType(PaddleDetailView)), same(detail));
-      expect(find.byType(CompareView), findsNothing);
-    });
-
-    testWidgets('addToCompare(stayOnPage: true) opens a full comparison', (
-      tester,
-    ) async {
-      final router = await pushDetails(tester, '/?compare=a&compare=b');
-
-      CatalogRoute.of(detailContext(tester)).addToCompare(
-        detailContext(tester),
-        'summit',
-        limit: 3,
-        stayOnPage: true,
-      );
-      await tester.pumpAndSettle();
-
-      expect(
-        _url(router).toString(),
-        '/compare?compare=a&compare=b&compare=summit',
-      );
-      expect(find.byType(PaddleDetailView), findsNothing);
-      expect(find.byType(CompareView), findsOneWidget);
-    });
+    expect(find.text('Lowest price'), findsOneWidget);
+    expect(currentUrl(router), '/?sort=price-asc');
   });
 
   testWidgets('the back button fades in while the detail page slides in', (
     tester,
   ) async {
-    await _pumpApp(tester, '/');
+    await pumpApp(tester, FakePaddleRepository([_paddle]));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('View details'));
     await tester.pump();

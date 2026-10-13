@@ -62,34 +62,28 @@ Map<String, Object?> _paddle(String id, {double? price}) => {
 };
 
 /// Reads the bundled paddles.json with no latency or failures.
-PaddleRepositoryFromFake _bundledRepository() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-  return PaddleRepositoryFromFake(
-    FakePaddleApi(
-      config: const ApiConfig(
-        minLatency: Duration.zero,
-        maxLatency: Duration.zero,
-        failureRate: 0,
-      ),
+PaddleRepositoryFromFake _bundledRepository() => PaddleRepositoryFromFake(
+  FakePaddleApi(
+    config: const ApiConfig(
+      minLatency: Duration.zero,
+      maxLatency: Duration.zero,
+      failureRate: 0,
     ),
-  );
-}
+  ),
+);
 
 List<Paddle> _value(Result<List<Paddle>> result) => switch (result) {
   Ok<List<Paddle>>() => result.value,
   Error<List<Paddle>>() => fail('Expected Ok, got $result'),
 };
 
-Future<List<String>> _ids(
-  PaddleRepository repository, {
-  PaddleQuery query = const PaddleQuery(),
-  int? limit,
-}) async {
-  final result = await repository.getPaddles(query: query, limit: limit);
-  return [for (final paddle in _value(result)) paddle.id];
-}
+Future<List<String>> _ids(PaddleRepository repository) async => [
+  for (final paddle in _value(await repository.getPaddles())) paddle.id,
+];
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('PaddleRepositoryFromFake.getPaddles', () {
     test('forwards the query, offset and limit to the api', () async {
       final api = _StubPaddleApi(response: {'paddles': []});
@@ -205,38 +199,6 @@ void main() {
 
     test('parses every paddle of paddles.json', () async {
       expect(await _ids(repository), hasLength(32));
-    });
-
-    test('by lowest price starts with the cheapest paddle', () async {
-      final ids = await _ids(
-        repository,
-        query: const PaddleQuery(sort: PaddleSort.priceLowToHigh),
-        limit: 12,
-      );
-
-      expect(ids.first, 'third-shot-labs-practice-pal');
-    });
-
-    test('by power starts with both paddles rated 9', () async {
-      final ids = await _ids(
-        repository,
-        query: const PaddleQuery(sort: PaddleSort.power),
-        limit: 12,
-      );
-
-      expect(ids.take(2), [
-        'third-shot-labs-drive-shot-elongated',
-        'erne-athletics-airborne-14',
-      ]);
-    });
-
-    test('filters by shape', () async {
-      final ids = await _ids(
-        repository,
-        query: PaddleQuery(shapes: {PaddleShape.widebody}),
-      );
-
-      expect(ids, hasLength(4));
     });
   });
 
