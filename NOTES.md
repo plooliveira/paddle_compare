@@ -143,6 +143,6 @@ I used Claude Code. About 90% of the code was generated, but under close supervi
 - **Shared links with three paddles on a phone browser.** A comparison shared from the desktop web holds three paddles, but a phone browser shows only the first two, without saying a third is hidden.
 - **A tablet layout.** Below 840 px a tablet gets the phone layout, just stretched.
 - **Better animations**, especially on scroll, while keeping the UI minimalist.
-- **A closer review of the code**, with the adjustments (including the cleanups in "Deliberately left out"). That would make me more confident taking accountability for every part of it.
+- **A closer review of the code**, including the cleanups in "Deliberately left out".
 - **Separate routing for mobile and web.** I'd study whether separate routing for mobile and web would pay off in the long run, so mobile doesn't carry the browser's limitations (see decision 1).
 - **Accessibility checks in the widget tests**, with Flutter's `meetsGuideline` for tap targets, labels and contrast, so a regression fails the build.
