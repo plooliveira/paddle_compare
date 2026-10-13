@@ -47,10 +47,6 @@ class CatalogController extends _$CatalogController {
       _ => null,
     };
     if (current == null) return;
-
-    // The notifier outlives rebuilds, but each build gets a new Ref. Checking
-    // the captured one drops this page after a filter change or a retry(),
-    // as well as a dispose.
     final requestRef = ref;
     state = AsyncData(
       current.copyWith(isLoadingMore: true, loadMoreError: null),
