@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../controller/catalog_controller.dart';
+import '../../controller/catalog_controller.dart';
 
 /// Last item of the grid. Being built means it scrolled near the viewport,
 /// so it asks for the next page.

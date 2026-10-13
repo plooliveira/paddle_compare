@@ -1,30 +1,44 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/widgets/paddle_image.dart';
-import '../../../../../core/widgets/skeleton_box.dart';
-import '../../../../../core/widgets/skeleton_pulse.dart';
-import '../../../../../data/repositories/paddle/paddle_repository.dart';
-import '../../../../compare/controller/compare_controller.dart';
-import '../../../../compare/controller/compare_limits.dart';
+import '../../../../core/widgets/paddle_image.dart';
+import '../../../../core/widgets/skeleton_box.dart';
+import '../../../../core/widgets/skeleton_pulse.dart';
+import '../../../../data/repositories/paddle/paddle_repository.dart';
+import '../../../compare/controller/compare_controller.dart';
+import '../../../router.dart';
+import '../../controller/catalog_controller.dart';
 
 /// Watching each paddle here is what loads it. The catalog stays mounted
 /// under a paddle's page, so a paddle added there starts loading while that
 /// page leaves.
 class CompareTray extends ConsumerWidget {
-  const CompareTray({super.key, required this.onOpen, required this.onRemove});
+  const CompareTray({
+    super.key,
+    required this.slots,
+    this.padding = const EdgeInsets.fromLTRB(16, 10, 8, 10),
+  });
 
-  final VoidCallback onOpen;
-  final ValueChanged<String> onRemove;
+  final int slots;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final ids = ref
-        .watch(compareIdsProvider)
-        .take(CompareLimits.mobile)
-        .toList();
+    final ids = ref.watch(compareIdsProvider).take(slots).toList();
+
+    CatalogRoute route() => CatalogRoute.fromFilter(
+      ref.read(catalogFilterProvider),
+      compare: ref.read(compareIdsProvider),
+    );
+
+    void remove(String id) => route()
+        .withCompare([
+          for (final other in ref.read(compareIdsProvider))
+            if (other != id) other,
+        ])
+        .goInPlace(context);
 
     return Material(
       color: theme.scaffoldBackgroundColor,
@@ -34,20 +48,20 @@ class CompareTray extends ConsumerWidget {
         button: true,
         label: 'Open comparison',
         child: InkWell(
-          onTap: onOpen,
+          onTap: () => route().goCompare(context),
           child: SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+              padding: padding,
               child: Row(
                 children: [
-                  for (var i = 0; i < CompareLimits.mobile; i++) ...[
+                  for (var i = 0; i < slots; i++) ...[
                     if (i > 0) const SizedBox(width: 12),
                     Expanded(
                       child: switch (ids.elementAtOrNull(i)) {
                         final id? => _PaddleSlot(
                           id: id,
-                          onRemove: () => onRemove(id),
+                          onRemove: () => remove(id),
                         ),
                         null => const _EmptySlot(),
                       },

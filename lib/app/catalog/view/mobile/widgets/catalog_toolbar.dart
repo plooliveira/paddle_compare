@@ -1,12 +1,9 @@
-import 'dart:async';
-
-import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../controller/catalog_controller.dart';
-import '../../../state/catalog_state.dart';
 import '../../widgets/catalog_labels.dart';
+import '../../widgets/catalog_result_count.dart';
 
 class CatalogToolbar extends ConsumerWidget {
   const CatalogToolbar({
@@ -33,7 +30,7 @@ class CatalogToolbar extends ConsumerWidget {
       spacing: 12,
       runSpacing: 4,
       children: [
-        const _ResultCount(),
+        const CatalogResultCount(),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -55,70 +52,6 @@ class CatalogToolbar extends ConsumerWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-String _countLabel(AsyncValue<CatalogState> state) => switch (state) {
-  AsyncValue(isLoading: true) => 'Loading…',
-  AsyncValue(hasError: true) => '',
-  AsyncValue(:final value?) when value.hasMore =>
-    '${value.paddles.length}+ paddles',
-  AsyncValue(:final value?) => paddleCountLabel(value.paddles.length),
-  _ => '',
-};
-
-/// Not a live region: that would speak on every search, cutting off the
-/// echo of the keys. The count is announced once results stop changing.
-class _ResultCount extends ConsumerStatefulWidget {
-  const _ResultCount();
-
-  @override
-  ConsumerState<_ResultCount> createState() => _ResultCountState();
-}
-
-class _ResultCountState extends ConsumerState<_ResultCount> {
-  static const _announceDelay = Duration(seconds: 1);
-
-  Timer? _announceTimer;
-
-  @override
-  void dispose() {
-    _announceTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Only a finished load of a new query is announced: a new page keeps the
-    // query, and a load in progress drops any pending announcement.
-    ref.listen(
-      catalogControllerProvider.select(
-        (state) => switch (state) {
-          AsyncData(isLoading: false, :final value) => value.query,
-          _ => null,
-        },
-      ),
-      (_, query) {
-        _announceTimer?.cancel();
-        if (query == null) return;
-        _announceTimer = Timer(_announceDelay, () {
-          SemanticsService.sendAnnouncement(
-            View.of(context),
-            _countLabel(ref.read(catalogControllerProvider)),
-            Directionality.of(context),
-          );
-        });
-      },
-    );
-    final label = ref.watch(catalogControllerProvider.select(_countLabel));
-    final theme = Theme.of(context);
-
-    return Text(
-      label,
-      style: theme.textTheme.labelMedium?.copyWith(
-        color: theme.colorScheme.onSurfaceVariant,
-      ),
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:paddle_compare/app/catalog/view/mobile/widgets/compare_tray.dart';
+import 'package:paddle_compare/app/catalog/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/widgets/paddle_detail_skeleton.dart';

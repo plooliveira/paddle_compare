@@ -7,7 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:paddle_compare/app/catalog/controller/catalog_filter.dart';
 import 'package:paddle_compare/app/catalog/view/catalog_view.dart';
 import 'package:paddle_compare/app/catalog/view/mobile/catalog_mobile_page.dart';
-import 'package:paddle_compare/app/catalog/view/mobile/widgets/compare_tray.dart';
+import 'package:paddle_compare/app/catalog/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
 import 'package:paddle_compare/app/paddle_detail/view/paddle_detail_view.dart';
 import 'package:paddle_compare/app/router.dart';

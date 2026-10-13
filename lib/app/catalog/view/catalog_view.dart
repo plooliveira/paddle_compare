@@ -7,6 +7,7 @@ import '../../../core/widgets/adaptive_view.dart';
 import '../../compare/controller/compare_controller.dart';
 import '../controller/catalog_controller.dart';
 import '../controller/catalog_filter.dart';
+import 'desktop/catalog_desktop_page.dart';
 import 'mobile/catalog_mobile_page.dart';
 
 class CatalogView extends StatefulWidget {
@@ -61,8 +62,7 @@ class _CatalogViewState extends State<CatalogView> {
       container: _container,
       child: AdaptiveView(
         mobile: (_) => const CatalogMobilePage(),
-        // TODO: desktop variant. The mobile one stands in until then.
-        desktop: (_) => const CatalogMobilePage(),
+        desktop: (_) => const CatalogDesktopPage(),
       ),
     );
   }

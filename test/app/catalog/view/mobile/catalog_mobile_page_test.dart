@@ -2,54 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:paddle_compare/app/catalog/view/mobile/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/catalog/view/mobile/widgets/filter_sheet.dart';
+import 'package:paddle_compare/app/catalog/view/widgets/compare_tray.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card.dart';
 import 'package:paddle_compare/app/catalog/view/widgets/paddle_card_skeleton.dart';
 import 'package:paddle_compare/app/compare/view/compare_view.dart';
-import 'package:paddle_compare/app/router.dart';
-import 'package:paddle_compare/core/theme/app_theme.dart';
 import 'package:paddle_compare/data/repositories/paddle/paddle_repository.dart';
-import 'package:paddle_compare/data/repositories/paddle/paddle_repository_provider.dart';
 
+import '../../../../helpers/catalog_pages.dart';
 import '../../../../helpers/fake_paddle_repository.dart';
-
-/// Even indexes are standard, odd ones hybrid. Prices go up with the index.
-List<Paddle> _paddles(int count) => [
-  for (var i = 0; i < count; i++)
-    Paddle(
-      id: 'p$i',
-      brand: 'Brand',
-      name: 'Paddle $i',
-      priceUsd: 100.0 + i,
-      inStock: true,
-      shape: i.isEven ? PaddleShape.standard : PaddleShape.hybrid,
-    ),
-];
-
-Future<GoRouter> _pumpPage(
-  WidgetTester tester,
-  FakePaddleRepository repository, {
-  String location = '/',
-}) async {
-  tester.view.physicalSize = const Size(375, 812) * 3;
-  tester.view.devicePixelRatio = 3;
-  addTearDown(tester.view.reset);
-  final router = GoRouter(routes: $appRoutes, initialLocation: location);
-  addTearDown(router.dispose);
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [paddleRepositoryProvider.overrideWithValue(repository)],
-      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
-    ),
-  );
-  await tester.pump();
-  return router;
-}
 
 Uri _url(GoRouter router) => router.routerDelegate.currentConfiguration.uri;
 
@@ -113,9 +77,9 @@ void main() {
   testWidgets('shows skeletons while loading, then two cards per row', (
     tester,
   ) async {
-    final repository = FakePaddleRepository(_paddles(5))
+    final repository = FakePaddleRepository(catalogPaddles(5))
       ..gate = Completer<void>();
-    await _pumpPage(tester, repository);
+    await pumpCatalogPage(tester, repository);
 
     expect(find.byType(PaddleCardSkeleton), findsWidgets);
     expect(find.text('Loading…'), findsOneWidget);
@@ -142,9 +106,9 @@ void main() {
   });
 
   testWidgets('shows an error with a retry that reloads', (tester) async {
-    final repository = FakePaddleRepository(_paddles(5))
+    final repository = FakePaddleRepository(catalogPaddles(5))
       ..error = const PaddleRepositoryException('down');
-    await _pumpPage(tester, repository);
+    await pumpCatalogPage(tester, repository);
     await tester.pumpAndSettle();
 
     expect(find.text('Something went wrong'), findsOneWidget);
@@ -161,8 +125,8 @@ void main() {
   testWidgets('search waits for a pause in typing, then goes to the URL', (
     tester,
   ) async {
-    final repository = FakePaddleRepository(_paddles(5));
-    final router = await _pumpPage(tester, repository);
+    final repository = FakePaddleRepository(catalogPaddles(5));
+    final router = await pumpCatalogPage(tester, repository);
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'paddle 3');
@@ -184,8 +148,8 @@ void main() {
   testWidgets('announces the count once, a second after new results land', (
     tester,
   ) async {
-    final repository = FakePaddleRepository(_paddles(5));
-    await _pumpPage(tester, repository);
+    final repository = FakePaddleRepository(catalogPaddles(5));
+    await pumpCatalogPage(tester, repository);
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 1));
     expect(tester.takeAnnouncements(), [
@@ -220,7 +184,10 @@ void main() {
   testWidgets('empty state clears the filters and the search field', (
     tester,
   ) async {
-    final router = await _pumpPage(tester, FakePaddleRepository(_paddles(5)));
+    final router = await pumpCatalogPage(
+      tester,
+      FakePaddleRepository(catalogPaddles(5)),
+    );
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'nothing like this');
@@ -241,9 +208,9 @@ void main() {
   testWidgets('a deep link restores the search, the chips and the grid', (
     tester,
   ) async {
-    await _pumpPage(
+    await pumpCatalogPage(
       tester,
-      FakePaddleRepository(_paddles(5)),
+      FakePaddleRepository(catalogPaddles(5)),
       location: '/?q=paddle%203&shape=hybrid',
     );
     await tester.pumpAndSettle();
@@ -257,9 +224,9 @@ void main() {
   testWidgets('a deep link sorts the whole catalog, not just the first page', (
     tester,
   ) async {
-    await _pumpPage(
+    await pumpCatalogPage(
       tester,
-      FakePaddleRepository(_paddles(20)),
+      FakePaddleRepository(catalogPaddles(20)),
       location: '/?sort=price-desc',
     );
     await tester.pumpAndSettle();
@@ -272,7 +239,7 @@ void main() {
   });
 
   testWidgets('falls back when the image or price is missing', (tester) async {
-    await _pumpPage(
+    await pumpCatalogPage(
       tester,
       FakePaddleRepository([
         const Paddle(id: 'x', brand: 'Brand', name: 'Mystery', inStock: false),
@@ -287,7 +254,7 @@ void main() {
 
   testWidgets('a screen reader reads each card as one button', (tester) async {
     final semantics = tester.ensureSemantics();
-    await _pumpPage(tester, FakePaddleRepository(_paddles(1)));
+    await pumpCatalogPage(tester, FakePaddleRepository(catalogPaddles(1)));
     await tester.pumpAndSettle();
 
     expect(
@@ -305,7 +272,10 @@ void main() {
   testWidgets('the filter sheet filters by shape and shows removable chips', (
     tester,
   ) async {
-    final router = await _pumpPage(tester, FakePaddleRepository(_paddles(5)));
+    final router = await pumpCatalogPage(
+      tester,
+      FakePaddleRepository(catalogPaddles(5)),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Filter'));
@@ -339,7 +309,10 @@ void main() {
   });
 
   testWidgets('the sort sheet reorders the grid', (tester) async {
-    final router = await _pumpPage(tester, FakePaddleRepository(_paddles(5)));
+    final router = await pumpCatalogPage(
+      tester,
+      FakePaddleRepository(catalogPaddles(5)),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Sort'));
@@ -362,7 +335,7 @@ void main() {
     tester,
   ) async {
     final reports = _recordUrlReports(tester);
-    await _pumpPage(tester, FakePaddleRepository(_paddles(5)));
+    await pumpCatalogPage(tester, FakePaddleRepository(catalogPaddles(5)));
     await tester.pumpAndSettle();
     reports.clear();
 
@@ -382,8 +355,8 @@ void main() {
   testWidgets('while reloading, the old grid is dimmed under a progress bar', (
     tester,
   ) async {
-    final repository = FakePaddleRepository(_paddles(5));
-    await _pumpPage(tester, repository);
+    final repository = FakePaddleRepository(catalogPaddles(5));
+    await pumpCatalogPage(tester, repository);
     await tester.pumpAndSettle();
 
     expect(_updating, findsNothing);
@@ -413,8 +386,8 @@ void main() {
   testWidgets('loads the next page when the end of the grid scrolls in', (
     tester,
   ) async {
-    final repository = FakePaddleRepository(_paddles(20));
-    await _pumpPage(tester, repository);
+    final repository = FakePaddleRepository(catalogPaddles(20));
+    await pumpCatalogPage(tester, repository);
     await tester.pumpAndSettle();
 
     expect(repository.offsets, [0]);
@@ -432,7 +405,7 @@ void main() {
   });
 
   testWidgets('focusing the search keeps the scroll position', (tester) async {
-    await _pumpPage(tester, FakePaddleRepository(_paddles(12)));
+    await pumpCatalogPage(tester, FakePaddleRepository(catalogPaddles(12)));
     await tester.pumpAndSettle();
 
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -600));
@@ -451,7 +424,7 @@ void main() {
 
   group('compare tray', () {
     testWidgets('is hidden when nothing is being compared', (tester) async {
-      await _pumpPage(tester, FakePaddleRepository(_paddles(3)));
+      await pumpCatalogPage(tester, FakePaddleRepository(catalogPaddles(3)));
       await tester.pumpAndSettle();
 
       expect(find.byType(CompareTray), findsNothing);
@@ -459,8 +432,8 @@ void main() {
 
     testWidgets('a card adds its paddle to the tray, in place', (tester) async {
       final reports = _recordUrlReports(tester);
-      final repository = FakePaddleRepository(_paddles(3));
-      final router = await _pumpPage(tester, repository);
+      final repository = FakePaddleRepository(catalogPaddles(3));
+      final router = await pumpCatalogPage(tester, repository);
       await tester.pumpAndSettle();
       reports.clear();
 
@@ -483,8 +456,8 @@ void main() {
     });
 
     testWidgets('loads the paddle and leaves room for another', (tester) async {
-      final repository = FakePaddleRepository(_paddles(3));
-      await _pumpPage(tester, repository, location: '/?compare=p0');
+      final repository = FakePaddleRepository(catalogPaddles(3));
+      await pumpCatalogPage(tester, repository, location: '/?compare=p0');
       await tester.pumpAndSettle();
 
       expect(_inTray(find.text('Paddle 0')), findsOneWidget);
@@ -502,8 +475,8 @@ void main() {
     });
 
     testWidgets('a card completes the comparison and opens it', (tester) async {
-      final repository = FakePaddleRepository(_paddles(3));
-      final router = await _pumpPage(
+      final repository = FakePaddleRepository(catalogPaddles(3));
+      final router = await pumpCatalogPage(
         tester,
         repository,
         location: '/?compare=p0',
@@ -536,9 +509,9 @@ void main() {
     });
 
     testWidgets('a disabled compare button does nothing', (tester) async {
-      final router = await _pumpPage(
+      final router = await pumpCatalogPage(
         tester,
-        FakePaddleRepository(_paddles(3)),
+        FakePaddleRepository(catalogPaddles(3)),
         location: '/?compare=p0&compare=p1',
       );
       await tester.pumpAndSettle();
@@ -555,9 +528,9 @@ void main() {
     });
 
     testWidgets('tapping the tray opens the comparison', (tester) async {
-      final router = await _pumpPage(
+      final router = await pumpCatalogPage(
         tester,
-        FakePaddleRepository(_paddles(3)),
+        FakePaddleRepository(catalogPaddles(3)),
         location: '/?shape=standard&compare=p0',
       );
       await tester.pumpAndSettle();
@@ -573,9 +546,9 @@ void main() {
       tester,
     ) async {
       final reports = _recordUrlReports(tester);
-      await _pumpPage(
+      await pumpCatalogPage(
         tester,
-        FakePaddleRepository(_paddles(3)),
+        FakePaddleRepository(catalogPaddles(3)),
         location: '/?compare=p0',
       );
       await tester.pumpAndSettle();
@@ -592,9 +565,9 @@ void main() {
     });
 
     testWidgets('a filter change keeps the comparison', (tester) async {
-      final router = await _pumpPage(
+      final router = await pumpCatalogPage(
         tester,
-        FakePaddleRepository(_paddles(3)),
+        FakePaddleRepository(catalogPaddles(3)),
         location: '/?compare=p0',
       );
       await tester.pumpAndSettle();
@@ -615,9 +588,9 @@ void main() {
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
-      await _pumpPage(
+      await pumpCatalogPage(
         tester,
-        FakePaddleRepository(_paddles(2)),
+        FakePaddleRepository(catalogPaddles(2)),
         location: '/?compare=p0',
       );
       await tester.pumpAndSettle();

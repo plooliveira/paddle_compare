@@ -1,10 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../widgets/paddle_card_skeleton.dart';
-import 'two_column_sliver.dart';
+import 'card_grid_layout.dart';
+import 'card_grid_sliver.dart';
+import 'paddle_card_skeleton.dart';
 
 class CatalogLoadingSliver extends StatefulWidget {
-  const CatalogLoadingSliver({super.key});
+  const CatalogLoadingSliver({super.key, required this.layout});
+
+  final CardGridLayout layout;
 
   @override
   State<CatalogLoadingSliver> createState() => _CatalogLoadingSliverState();
@@ -42,8 +45,9 @@ class _CatalogLoadingSliverState extends State<CatalogLoadingSliver>
   Widget build(BuildContext context) {
     return SliverFadeTransition(
       opacity: _opacity,
-      sliver: TwoColumnSliver(
-        itemCount: 6,
+      sliver: CardGridSliver(
+        layout: widget.layout,
+        itemCount: widget.layout.columns * 3,
         itemBuilder: (context, index) => const PaddleCardSkeleton(),
       ),
     );

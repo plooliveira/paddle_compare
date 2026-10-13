@@ -1,13 +1,18 @@
 import 'package:material_ui/material_ui.dart';
 
 class CatalogHeader extends StatelessWidget {
-  const CatalogHeader({super.key});
+  const CatalogHeader({
+    super.key,
+    this.padding = const EdgeInsets.fromLTRB(16, 24, 16, 20),
+  });
+
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 20),
+      padding: padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
