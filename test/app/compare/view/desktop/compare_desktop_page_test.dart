@@ -104,6 +104,26 @@ void main() {
     expect(label.center.dy, closeTo(value.center.dy, 1));
   });
 
+  testWidgets('highlights the specs that differ, once two paddles load', (
+    tester,
+  ) async {
+    await _pumpPage(tester, FakePaddleRepository([_summit, _volt]), {
+      'compare': ['summit', 'volt'],
+    });
+
+    expect(find.bySemanticsLabel('Shape, differs'), findsOneWidget);
+    // Only Summit lists a power rating.
+    expect(find.bySemanticsLabel('Power, differs'), findsNothing);
+  });
+
+  testWidgets('highlights nothing with a single paddle', (tester) async {
+    await _pumpPage(tester, FakePaddleRepository([_summit]), {
+      'compare': 'summit',
+    });
+
+    expect(find.bySemanticsLabel(RegExp('differs')), findsNothing);
+  });
+
   testWidgets('an empty column goes back to the catalog to pick a paddle', (
     tester,
   ) async {

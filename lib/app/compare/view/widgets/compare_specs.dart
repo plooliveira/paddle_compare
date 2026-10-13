@@ -9,6 +9,11 @@ typedef CompareRating = ({String label, int? Function(Paddle) rating});
 abstract final class CompareSpecs {
   static const maxRating = 10;
 
+  /// Two or more known values that aren't all the same. Missing ones are
+  /// skipped: a spec that isn't listed isn't a known difference.
+  static bool differ(Iterable<Object?> values) =>
+      values.nonNulls.toSet().length > 1;
+
   static final List<CompareSpec> key = [
     (label: 'Shape', value: (paddle) => paddle.shape?.label),
     (

@@ -121,6 +121,19 @@ void main() {
     );
   });
 
+  testWidgets('highlights the specs that differ', (tester) async {
+    await _pumpPage(tester, FakePaddleRepository([fullPaddle, sparsePaddle]), [
+      'summit',
+      'sparse',
+    ]);
+    await tester.pumpAndSettle();
+
+    // Power is 7 and 5. Shape is only listed for one, so it doesn't count.
+    expect(find.bySemanticsLabel('Power, differs'), findsOneWidget);
+    expect(find.bySemanticsLabel('Shape, differs'), findsNothing);
+    expect(find.bySemanticsLabel('Shape'), findsOneWidget);
+  });
+
   testWidgets('a phone shows the first two of three paddles', (tester) async {
     final repository = FakePaddleRepository([fullPaddle, sparsePaddle, _other]);
     await _pumpPage(tester, repository, ['summit', 'sparse', 'other']);
