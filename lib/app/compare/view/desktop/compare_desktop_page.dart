@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:paddle_compare/core/widgets/top_bar.dart';
 
 import '../../../../core/widgets/fading_back_button.dart';
 import '../../../../data/repositories/paddle/paddle_repository.dart';
@@ -69,7 +70,7 @@ class CompareDesktopPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _TopBar(margin: margin),
+            TopBar(margin: margin),
             Expanded(
               // Reaches the window's edge, so the scrollbar sits there, as in
               // the catalog's grid.
@@ -128,40 +129,6 @@ class CompareDesktopPage extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.margin});
-
-  /// Lines the arrow up with the margin rather than the button's edge.
-  static const _backButtonInset = 8.0;
-
-  final double margin;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(
-            margin - _backButtonInset,
-            12,
-            margin,
-            12,
-          ),
-          child: Row(
-            children: [
-              const FadingBackButton(),
-              const SizedBox(width: 4),
-              Text('Paddles', style: Theme.of(context).textTheme.titleMedium),
-            ],
-          ),
-        ),
-        const Divider(),
-      ],
     );
   }
 }
