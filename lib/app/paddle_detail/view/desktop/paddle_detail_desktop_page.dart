@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:paddle_compare/config/screen_config.dart';
 import 'package:paddle_compare/core/widgets/top_bar.dart';
 
 import '../../../../core/widgets/fading_back_button.dart';
@@ -28,11 +29,6 @@ import 'widgets/paddle_detail_desktop_skeleton.dart';
 class PaddleDetailDesktopPage extends ConsumerWidget {
   const PaddleDetailDesktopPage({super.key});
 
-  // The catalog's, so the two pages line up.
-  static const _gutter = 24.0;
-  static const _maxContentWidth = 1200.0;
-  static const _compactWidth = 1024.0;
-
   /// The illustrations are 600×800.
   static const _imageAspectRatio = 3 / 4;
 
@@ -44,8 +40,11 @@ class PaddleDetailDesktopPage extends ConsumerWidget {
     );
 
     final width = MediaQuery.sizeOf(context).width;
-    final isCompact = width < _compactWidth;
-    final margin = math.max(_gutter, (width - _maxContentWidth) / 2);
+    final isCompact = width < ScreenConfig.compactWidth;
+    final margin = math.max(
+      ScreenConfig.gutter,
+      (width - ScreenConfig.maxContentWidth) / 2,
+    );
     final keySpecColumns = isCompact ? 2 : 4;
 
     _Columns columns({required Widget image, required Widget content}) =>

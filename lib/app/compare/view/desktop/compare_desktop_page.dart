@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:paddle_compare/config/screen_config.dart';
 import 'package:paddle_compare/core/widgets/top_bar.dart';
 
 import '../../../../core/widgets/fading_back_button.dart';
@@ -18,11 +19,6 @@ import '../widgets/compare_specs.dart';
 /// top bar, as on the detail page.
 class CompareDesktopPage extends ConsumerWidget {
   const CompareDesktopPage({super.key});
-
-  // The catalog's, so the pages line up.
-  static const _gutter = 24.0;
-  static const _maxContentWidth = 1200.0;
-  static const _compactWidth = 1024.0;
 
   static const _gap = 24.0;
 
@@ -43,8 +39,11 @@ class CompareDesktopPage extends ConsumerWidget {
     ];
 
     final Size(:width, :height) = MediaQuery.sizeOf(context);
-    final margin = math.max(_gutter, (width - _maxContentWidth) / 2);
-    final labelWidth = width < _compactWidth ? 160.0 : 200.0;
+    final margin = math.max(
+      ScreenConfig.gutter,
+      (width - ScreenConfig.maxContentWidth) / 2,
+    );
+    final labelWidth = width < ScreenConfig.compactWidth ? 160.0 : 200.0;
     final imageMaxHeight = math.min(
       _imageMaxHeight,
       height * _imageMaxHeightFraction,

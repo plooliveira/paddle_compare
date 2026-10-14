@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:paddle_compare/config/screen_config.dart';
 
 import '../../../compare/controller/compare_controller.dart';
 import '../../../compare/controller/compare_limits.dart';
@@ -24,10 +25,6 @@ class CatalogDesktopPage extends ConsumerStatefulWidget {
 }
 
 class _CatalogDesktopPageState extends ConsumerState<CatalogDesktopPage> {
-  static const _gutter = 24.0;
-  static const _maxContentWidth = 1200.0;
-  static const _compactWidth = 1024.0;
-
   static const _listHeaderHeight = 48.0;
 
   final _scroll = ScrollController();
@@ -58,8 +55,11 @@ class _CatalogDesktopPageState extends ConsumerState<CatalogDesktopPage> {
     );
 
     final width = MediaQuery.sizeOf(context).width;
-    final isCompact = width < _compactWidth;
-    final margin = math.max(_gutter, (width - _maxContentWidth) / 2);
+    final isCompact = width < ScreenConfig.compactWidth;
+    final margin = math.max(
+      ScreenConfig.gutter,
+      (width - ScreenConfig.maxContentWidth) / 2,
+    );
 
     return Scaffold(
       bottomNavigationBar: isComparing
